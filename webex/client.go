@@ -18,6 +18,36 @@ type Client struct {
 	headers    map[string]string
 }
 
+// handleHTTPError processes HTTP error responses in a consistent way
+func handleHTTPError(resp *http.Response, body []byte) error {
+	var errorData map[string]interface{}
+	if err := json.Unmarshal(body, &errorData); err != nil {
+		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
+	}
+	return fmt.Errorf("Webex API error: %v", errorData)
+}
+
+// processResponse handles common response processing for all HTTP methods
+func processResponse(resp *http.Response) (map[string]interface{}, error) {
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode >= 400 {
+		return nil, handleHTTPError(resp, body)
+	}
+
+	var result map[string]interface{}
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func NewClient() *Client {
 	return &Client{
 		httpClient: &http.Client{
@@ -30,7 +60,7 @@ func NewClient() *Client {
 
 func (c *Client) Get(endpoint string, params map[string]string) (map[string]interface{}, error) {
 	fullURL := config.GetWebexURL(endpoint)
-	
+
 	if len(params) > 0 {
 		u, err := url.Parse(fullURL)
 		if err != nil {
@@ -59,32 +89,13 @@ func (c *Client) Get(endpoint string, params map[string]string) (map[string]inte
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		var errorData map[string]interface{}
-		if err := json.Unmarshal(body, &errorData); err != nil {
-			return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-		}
-		return nil, fmt.Errorf("Webex API error: %v", errorData)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return processResponse(resp)
 }
 
 func (c *Client) Post(endpoint string, data interface{}) (map[string]interface{}, error) {
 	fullURL := config.GetWebexURL(endpoint)
-	
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -104,32 +115,13 @@ func (c *Client) Post(endpoint string, data interface{}) (map[string]interface{}
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		var errorData map[string]interface{}
-		if err := json.Unmarshal(body, &errorData); err != nil {
-			return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-		}
-		return nil, fmt.Errorf("Webex API error: %v", errorData)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return processResponse(resp)
 }
 
 func (c *Client) Put(endpoint string, data interface{}) (map[string]interface{}, error) {
 	fullURL := config.GetWebexURL(endpoint)
-	
+
 	jsonData, err := json.Marshal(data)
 	if err != nil {
 		return nil, err
@@ -149,32 +141,13 @@ func (c *Client) Put(endpoint string, data interface{}) (map[string]interface{},
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if resp.StatusCode >= 400 {
-		var errorData map[string]interface{}
-		if err := json.Unmarshal(body, &errorData); err != nil {
-			return nil, fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-		}
-		return nil, fmt.Errorf("Webex API error: %v", errorData)
-	}
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return processResponse(resp)
 }
 
 func (c *Client) Delete(endpoint string) error {
 	fullURL := config.GetWebexURL(endpoint)
-	
+
 	req, err := http.NewRequest("DELETE", fullURL, nil)
 	if err != nil {
 		return err
@@ -192,11 +165,7 @@ func (c *Client) Delete(endpoint string) error {
 
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)
-		var errorData map[string]interface{}
-		if err := json.Unmarshal(body, &errorData); err != nil {
-			return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
-		}
-		return fmt.Errorf("Webex API error: %v", errorData)
+		return handleHTTPError(resp, body)
 	}
 
 	return nil

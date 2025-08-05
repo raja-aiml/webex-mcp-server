@@ -1,9 +1,9 @@
 package webex
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"bytes"
 	"io"
 	"net/http"
 	"net/url"
@@ -16,11 +16,11 @@ import (
 // OptimizedClient provides a single, configurable HTTP client
 // that can use either net/http or fasthttp based on configuration
 type OptimizedClient struct {
-	useFastHTTP bool
-	httpClient  *http.Client
-	fastClient  *fasthttp.Client
-	baseURL     string
-	headers     map[string]string
+	useFastHTTP    bool
+	httpClient     *http.Client
+	fastClient     *fasthttp.Client
+	baseURL        string
+	headers        map[string]string
 	configProvider config.Provider
 }
 
@@ -32,14 +32,14 @@ func NewOptimizedClient() HTTPClient {
 // NewOptimizedClientWithConfig creates a client with dependency injection
 func NewOptimizedClientWithConfig(configProvider config.Provider) HTTPClient {
 	useFastHTTP := configProvider.GetUseFastHTTP()
-	
+
 	client := &OptimizedClient{
-		useFastHTTP: useFastHTTP,
-		baseURL:     configProvider.GetWebexURL(""),
-		headers:     configProvider.GetWebexHeaders(),
+		useFastHTTP:    useFastHTTP,
+		baseURL:        configProvider.GetWebexURL(""),
+		headers:        configProvider.GetWebexHeaders(),
 		configProvider: configProvider,
 	}
-	
+
 	if useFastHTTP {
 		client.fastClient = &fasthttp.Client{
 			MaxConnsPerHost:     100,
@@ -52,7 +52,7 @@ func NewOptimizedClientWithConfig(configProvider config.Provider) HTTPClient {
 			Timeout: 30 * time.Second,
 		}
 	}
-	
+
 	return client
 }
 
@@ -108,7 +108,7 @@ func (c *OptimizedClient) doRequest(method, url string, data interface{}) (map[s
 			return nil, fmt.Errorf("failed to marshal request: %w", err)
 		}
 	}
-	
+
 	if c.useFastHTTP {
 		return c.doFastHTTPRequest(method, url, body)
 	}
@@ -121,12 +121,12 @@ func (c *OptimizedClient) doNetHTTPRequest(method, url string, body []byte) (map
 	if body != nil {
 		reqBody = bytes.NewReader(body)
 	}
-	
+
 	req, err := http.NewRequest(method, url, reqBody)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	// Set headers
 	for key, value := range c.headers {
 		req.Header.Set(key, value)
@@ -134,18 +134,18 @@ func (c *OptimizedClient) doNetHTTPRequest(method, url string, body []byte) (map
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
-	
+
 	resp, err := c.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
-	
+
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return c.handleResponse(resp.StatusCode, respBody)
 }
 
@@ -155,10 +155,10 @@ func (c *OptimizedClient) doFastHTTPRequest(method, url string, body []byte) (ma
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseRequest(req)
 	defer fasthttp.ReleaseResponse(resp)
-	
+
 	req.SetRequestURI(url)
 	req.Header.SetMethod(method)
-	
+
 	// Set headers
 	for key, value := range c.headers {
 		req.Header.Set(key, value)
@@ -167,32 +167,30 @@ func (c *OptimizedClient) doFastHTTPRequest(method, url string, body []byte) (ma
 		req.Header.Set("Content-Type", "application/json")
 		req.SetBody(body)
 	}
-	
+
 	if err := c.fastClient.Do(req, resp); err != nil {
 		return nil, err
 	}
-	
+
 	return c.handleResponse(resp.StatusCode(), resp.Body())
 }
 
 // handleResponse processes the HTTP response
 func (c *OptimizedClient) handleResponse(statusCode int, body []byte) (map[string]interface{}, error) {
 	if statusCode >= 400 {
-		var errorData map[string]interface{}
-		if err := json.Unmarshal(body, &errorData); err != nil {
-			return nil, fmt.Errorf("HTTP %d: %s", statusCode, string(body))
-		}
-		return nil, fmt.Errorf("Webex API error: %v", errorData)
+		// Create a mock response for handleHTTPError
+		resp := &http.Response{StatusCode: statusCode}
+		return nil, handleHTTPError(resp, body)
 	}
-	
+
 	if len(body) == 0 {
 		return nil, nil
 	}
-	
+
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
-	
+
 	return result, nil
 }
