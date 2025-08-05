@@ -139,7 +139,12 @@ func (c *OptimizedClient) doNetHTTPRequest(method, url string, body []byte) (map
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't fail the request
+			fmt.Printf("Failed to close response body: %v\n", err)
+		}
+	}()
 
 	respBody, err := io.ReadAll(resp.Body)
 	if err != nil {

@@ -24,12 +24,17 @@ func handleHTTPError(resp *http.Response, body []byte) error {
 	if err := json.Unmarshal(body, &errorData); err != nil {
 		return fmt.Errorf("HTTP %d: %s", resp.StatusCode, string(body))
 	}
-	return fmt.Errorf("Webex API error: %v", errorData)
+	return fmt.Errorf("webex API error: %v", errorData)
 }
 
 // processResponse handles common response processing for all HTTP methods
 func processResponse(resp *http.Response) (map[string]interface{}, error) {
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't fail the request
+			fmt.Printf("Failed to close response body: %v\n", err)
+		}
+	}()
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
@@ -161,7 +166,12 @@ func (c *Client) Delete(endpoint string) error {
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			// Log error but don't fail the request
+			fmt.Printf("Failed to close response body: %v\n", err)
+		}
+	}()
 
 	if resp.StatusCode >= 400 {
 		body, _ := io.ReadAll(resp.Body)

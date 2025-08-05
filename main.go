@@ -66,7 +66,9 @@ func main() {
 				"version": ServerVersion,
 				"time":    time.Now().UTC().Format(time.RFC3339),
 			}
-			json.NewEncoder(w).Encode(response)
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				log.Printf("Failed to encode health response: %v", err)
+			}
 		})
 
 		// MCP handler
