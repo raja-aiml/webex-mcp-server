@@ -49,25 +49,45 @@ PORT=3001
 USE_FASTHTTP=false  # Set to true for performance optimization
 ```
 
-## Usage
+## Quick Start with Claude Desktop
 
-### Build the server:
+**This MCP server is designed to work with Claude Desktop.** See the [Claude Desktop Quick Start Guide](docs/CLAUDE_DESKTOP_QUICK_START.md).
+
+### 1. Build the server:
 ```bash
 make build
 ```
 
-### Run in stdio mode (default):
+### 2. Add to Claude Desktop config:
+```json
+{
+  "mcpServers": {
+    "webex": {
+      "command": "/full/path/to/webex-mcp-server",
+      "env": {
+        "WEBEX_PUBLIC_WORKSPACE_API_KEY": "your-token"
+      }
+    }
+  }
+}
+```
+
+### 3. Restart Claude and use:
+- "List my Webex rooms"
+- "Send a message to [room name]"
+- "Show recent messages"
+
+## Other Usage Modes
+
+### Run in stdio mode (for debugging):
 ```bash
-make run
-# or
 ./build/webex-mcp-server
 ```
 
-### Run in HTTP/SSE mode:
+### Run in HTTP mode (for health checks):
 ```bash
-make run-http
-# or
 ./build/webex-mcp-server -http :3001
+curl http://localhost:3001/health
 ```
 
 ## Available Tools
