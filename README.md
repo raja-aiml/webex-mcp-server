@@ -109,17 +109,25 @@ The server provides the following tool categories:
 
 ## Testing
 
-See [Quick Start Testing Guide](docs/QUICK_START_TESTING.md) for testing instructions.
+**Important**: This MCP server is designed for use with Claude Desktop. The web-based MCP Inspector is NOT compatible.
 
-Quick test:
+### Quick Test
 ```bash
-# Automated test
-./scripts/test_mcp_server.sh
+# Test stdio mode
+./scripts/test_stdio.sh
 
-# Interactive test
+# Test health endpoint (HTTP mode)
 make run http  # Terminal 1
-./scripts/mcp_client.sh  # Terminal 2
+curl http://localhost:3001/health  # Terminal 2
 ```
+
+### Claude Desktop Integration
+Add to your Claude Desktop config to use all features:
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+- Linux: `~/.config/Claude/claude_desktop_config.json`
+
+See [Testing Guide](docs/TESTING_CORRECTED.md) for details.
 
 ## Development
 
