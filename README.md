@@ -8,11 +8,11 @@ A Go implementation of the Webex Messaging MCP (Model Context Protocol) Server, 
 - MCP protocol support using the official Go SDK
 - Support for both stdio and SSE (Server-Sent Events) transports
 - Comprehensive tool registry with 53 Webex operations
-- **Performance optimized with fasthttp** for Webex API calls:
-  - 10x faster than standard net/http
+- **Flexible HTTP client** with configurable backend:
+  - Standard `net/http` for compatibility (default)
+  - Optional `fasthttp` for 10x performance improvement
   - Automatic connection pooling and reuse
-  - Reduced memory allocations and GC pressure
-  - Zero-allocation request handling
+  - Configurable via `USE_FASTHTTP` environment variable
 
 ## Prerequisites
 
@@ -46,6 +46,7 @@ Create a `.env` file with the following variables:
 WEBEX_PUBLIC_WORKSPACE_API_KEY=your_webex_api_token_here
 WEBEX_API_BASE_URL=https://webexapis.com/v1
 PORT=3001
+USE_FASTHTTP=false  # Set to true for performance optimization
 ```
 
 ## Usage
@@ -138,8 +139,7 @@ webex-mcp-server-go/
 ├── config/                 - Configuration management
 │   └── config.go          - Environment and API configuration
 ├── webex/                  - Webex API client implementation
-│   ├── client.go          - Standard HTTP client
-│   ├── fastclient.go      - Optimized fasthttp client (10x faster)
+│   ├── client.go          - Unified HTTP client (supports net/http and fasthttp)
 │   └── interface.go       - HTTPClient interface (DI/IoC)
 └── tools/                  - MCP tool implementations (53 tools)
     ├── base.go            - Base tool functionality (DRY)

@@ -27,7 +27,7 @@ func NewToolBaseWithConfig(name, description string, schema *jsonschema.Schema, 
 		name:           name,
 		description:    description,
 		schema:         schema,
-		client:         webex.NewOptimizedClientWithConfig(configProvider),
+		client:         webex.NewClientWithConfig(configProvider),
 		configProvider: configProvider,
 	}
 }
