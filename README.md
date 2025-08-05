@@ -107,6 +107,20 @@ The server provides the following tool categories:
 - Events
 - ECM (Enterprise Content Management) operations
 
+## Testing
+
+See [Quick Start Testing Guide](docs/QUICK_START_TESTING.md) for testing instructions.
+
+Quick test:
+```bash
+# Automated test
+./scripts/test_mcp_server.sh
+
+# Interactive test
+make run http  # Terminal 1
+./scripts/mcp_client.sh  # Terminal 2
+```
+
 ## Development
 
 ### Run tests:
