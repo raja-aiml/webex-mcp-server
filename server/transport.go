@@ -5,21 +5,45 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/raja-aiml/webex-mcp-server-go/handlers"
 )
 
-// RunHTTPServer starts the HTTP server
-func RunHTTPServer(httpAddr string, server *mcp.Server, serviceName, version string) error {
+// RunHTTPServer starts the HTTP server with context support
+func RunHTTPServer(ctx context.Context, httpAddr string, server *mcp.Server, serviceName, version string) error {
 	mux := handlers.SetupHTTPHandlers(server, serviceName, version)
-	log.Printf("MCP server listening at %s (using fasthttp client for Webex API)", httpAddr)
-	return http.ListenAndServe(httpAddr, mux)
+
+	httpServer := &http.Server{
+		Addr:    httpAddr,
+		Handler: mux,
+	}
+
+	// Start server in goroutine
+	go func() {
+		log.Printf("MCP server listening at %s", httpAddr)
+		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Printf("HTTP server error: %v", err)
+		}
+	}()
+
+	// Wait for context cancellation
+	<-ctx.Done()
+
+	// Graceful shutdown
+	log.Println("Shutting down HTTP server...")
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	return httpServer.Shutdown(shutdownCtx)
 }
 
-// RunStdioServer starts the server in stdio mode
-func RunStdioServer(server *mcp.Server, serviceName, version string) error {
+// RunStdioServer starts the server in stdio mode with context support
+func RunStdioServer(ctx context.Context, server *mcp.Server, serviceName, version string) error {
 	transport := mcp.NewLoggingTransport(mcp.NewStdioTransport(), os.Stderr)
 	log.Printf("Starting %s v%s in stdio mode", serviceName, version)
-	return server.Run(context.Background(), transport)
+
+	// Run with context
+	return server.Run(ctx, transport)
 }
