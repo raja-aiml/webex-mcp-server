@@ -25,7 +25,7 @@ func NewListMessagesSimple() *ListMessagesSimple {
 		"beforeMessage":   StringProperty("List messages sent before a specific message, by ID."),
 		"max":             IntegerProperty("Limit the maximum number of messages in the response."),
 	}, []string{"roomId"})
-	
+
 	return &ListMessagesSimple{
 		ToolBase: NewToolBase("list_messages", "List messages in a Webex room.", schema),
 	}

@@ -77,15 +77,15 @@ type CreateMessageTool struct {
 
 func NewCreateMessageTool() *CreateMessageTool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId":       StringProperty("The ID of the room to send the message to."),
-		"parentId":     StringProperty("The ID of the parent message (for threaded messages)."),
-		"toPersonId":   StringProperty("The ID of the person to send a direct message to."),
+		"roomId":        StringProperty("The ID of the room to send the message to."),
+		"parentId":      StringProperty("The ID of the parent message (for threaded messages)."),
+		"toPersonId":    StringProperty("The ID of the person to send a direct message to."),
 		"toPersonEmail": StringProperty("The email address of the person to send a direct message to."),
-		"text":         StringProperty("The plain text content of the message."),
-		"markdown":     StringProperty("The markdown content of the message."),
-		"html":         StringProperty("The HTML content of the message."),
-		"files":        ArrayProperty("Array of file URLs to attach to the message.", StringProperty("")),
-		"attachments":  ArrayProperty("Array of attachment objects for cards.", ObjectProperty("")),
+		"text":          StringProperty("The plain text content of the message."),
+		"markdown":      StringProperty("The markdown content of the message."),
+		"html":          StringProperty("The HTML content of the message."),
+		"files":         ArrayProperty("Array of file URLs to attach to the message.", StringProperty("")),
+		"attachments":   ArrayProperty("Array of attachment objects for cards.", ObjectProperty("")),
 	}, []string{})
 
 	return &CreateMessageTool{

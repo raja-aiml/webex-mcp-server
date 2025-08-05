@@ -15,10 +15,10 @@ type ListRoomsTool struct {
 
 func NewListRoomsTool() *ListRoomsTool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"teamId":      StringProperty("List rooms associated with a team, by ID."),
-		"type":        StringProperty("List rooms by type: 'direct' or 'group'."),
-		"sortBy":      StringProperty("Sort results by: 'id', 'lastactivity', or 'created'."),
-		"max":         IntegerProperty("Limit the maximum number of rooms in the response."),
+		"teamId": StringProperty("List rooms associated with a team, by ID."),
+		"type":   StringProperty("List rooms by type: 'direct' or 'group'."),
+		"sortBy": StringProperty("Sort results by: 'id', 'lastactivity', or 'created'."),
+		"max":    IntegerProperty("Limit the maximum number of rooms in the response."),
 	}, []string{})
 
 	return &ListRoomsTool{
@@ -28,10 +28,10 @@ func NewListRoomsTool() *ListRoomsTool {
 
 func (t *ListRoomsTool) Execute(args json.RawMessage) (interface{}, error) {
 	var params struct {
-		TeamId  string `json:"teamId,omitempty"`
-		Type    string `json:"type,omitempty"`
-		SortBy  string `json:"sortBy,omitempty"`
-		Max     int    `json:"max,omitempty"`
+		TeamId string `json:"teamId,omitempty"`
+		Type   string `json:"type,omitempty"`
+		SortBy string `json:"sortBy,omitempty"`
+		Max    int    `json:"max,omitempty"`
 	}
 
 	if err := json.Unmarshal(args, &params); err != nil {
@@ -66,13 +66,13 @@ type CreateRoomTool struct {
 
 func NewCreateRoomTool() *CreateRoomTool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"title":               StringProperty("A user-friendly name for the room."),
-		"teamId":              StringProperty("The ID for the team with which this room is associated."),
-		"classificationId":    StringProperty("The classification ID for the room."),
-		"isLocked":            BooleanProperty("Whether the room is locked (moderator approval required)."),
-		"isPublic":            BooleanProperty("Whether the room is public (allows guest users)."),
-		"description":         StringProperty("The description of the room."),
-		"isAnnouncementOnly":  BooleanProperty("Whether the room is announcement only."),
+		"title":              StringProperty("A user-friendly name for the room."),
+		"teamId":             StringProperty("The ID for the team with which this room is associated."),
+		"classificationId":   StringProperty("The classification ID for the room."),
+		"isLocked":           BooleanProperty("Whether the room is locked (moderator approval required)."),
+		"isPublic":           BooleanProperty("Whether the room is public (allows guest users)."),
+		"description":        StringProperty("The description of the room."),
+		"isAnnouncementOnly": BooleanProperty("Whether the room is announcement only."),
 	}, []string{"title"})
 
 	return &CreateRoomTool{
@@ -139,15 +139,15 @@ type UpdateRoomTool struct {
 
 func NewUpdateRoomTool() *UpdateRoomTool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId":              StringProperty("The unique identifier for the room."),
-		"title":               StringProperty("A user-friendly name for the room."),
-		"classificationId":    StringProperty("The classification ID for the room."),
-		"teamId":              StringProperty("The teamId to which this room belongs."),
-		"isLocked":            BooleanProperty("Whether the room is locked (moderator approval required)."),
-		"isPublic":            BooleanProperty("Whether the room is public (allows guest users)."),
-		"description":         StringProperty("The description of the room."),
-		"isAnnouncementOnly":  BooleanProperty("Whether the room is announcement only."),
-		"isReadOnly":          BooleanProperty("Whether the room is read only."),
+		"roomId":             StringProperty("The unique identifier for the room."),
+		"title":              StringProperty("A user-friendly name for the room."),
+		"classificationId":   StringProperty("The classification ID for the room."),
+		"teamId":             StringProperty("The teamId to which this room belongs."),
+		"isLocked":           BooleanProperty("Whether the room is locked (moderator approval required)."),
+		"isPublic":           BooleanProperty("Whether the room is public (allows guest users)."),
+		"description":        StringProperty("The description of the room."),
+		"isAnnouncementOnly": BooleanProperty("Whether the room is announcement only."),
+		"isReadOnly":         BooleanProperty("Whether the room is read only."),
 	}, []string{"roomId"})
 
 	return &UpdateRoomTool{

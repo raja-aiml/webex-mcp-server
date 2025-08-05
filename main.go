@@ -73,14 +73,14 @@ func main() {
 func registerTools(server *mcp.Server, registry *tools.Registry) {
 	// Get all tools from registry
 	allTools := registry.GetTools()
-	
+
 	for _, tool := range allTools {
 		// Capture tool in closure
 		t := tool
-		
+
 		// Get schema directly - simplified approach
 		schemaInterface := t.GetInputSchema()
-		
+
 		// Handle both direct jsonschema.Schema and legacy interface{} schemas
 		var schema *jsonschema.Schema
 		switch s := schemaInterface.(type) {
@@ -99,14 +99,14 @@ func registerTools(server *mcp.Server, registry *tools.Registry) {
 				continue
 			}
 		}
-		
+
 		// Create MCP tool definition
 		mcpTool := &mcp.Tool{
 			Name:        t.Name(),
 			Description: t.Description(),
 			InputSchema: schema,
 		}
-		
+
 		// Create handler function using the proper ToolHandler type
 		handler := mcp.ToolHandler(func(ctx context.Context, ss *mcp.ServerSession, params *mcp.CallToolParamsFor[map[string]any]) (*mcp.CallToolResultFor[any], error) {
 			// Convert arguments to JSON for our tool
@@ -114,7 +114,7 @@ func registerTools(server *mcp.Server, registry *tools.Registry) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal arguments: %w", err)
 			}
-			
+
 			// Execute the tool with raw arguments
 			result, err := t.Execute(argsJSON)
 			if err != nil {
@@ -129,13 +129,13 @@ func registerTools(server *mcp.Server, registry *tools.Registry) {
 					IsError: true,
 				}, nil
 			}
-			
+
 			// Convert result to JSON string
 			resultJSON, err := json.MarshalIndent(result, "", "  ")
 			if err != nil {
 				return nil, fmt.Errorf("failed to marshal result: %w", err)
 			}
-			
+
 			// Return as text content
 			return &mcp.CallToolResultFor[any]{
 				Content: []mcp.Content{
@@ -145,7 +145,7 @@ func registerTools(server *mcp.Server, registry *tools.Registry) {
 				},
 			}, nil
 		})
-		
+
 		// Add tool to server
 		server.AddTool(mcpTool, handler)
 	}

@@ -50,12 +50,12 @@ func LoadTools() (*Registry, error) {
 	// Use plugin architecture for extensibility
 	// This implements Open/Closed Principle - open for extension, closed for modification
 	manager := NewPluginManager()
-	
+
 	// Load all available plugins
 	// To add new tools, create a new plugin and register it here
 	// No need to modify this function anymore
 	loadDefaultPlugins(manager)
-	
+
 	// Load plugins into registry
 	if err := manager.LoadPlugins(registry); err != nil {
 		return nil, err
@@ -70,15 +70,15 @@ func loadDefaultPlugins(manager *PluginManager) {
 	// Import plugins package to access plugin implementations
 	// In a real implementation, this could use dynamic loading
 	// For now, we'll use compile-time registration
-	
+
 	// This is a temporary implementation until we move plugins to their own package
 	// The actual implementation would be:
 	// plugins.LoadAllPlugins(manager)
-	
+
 	// For now, keep the old implementation to maintain compatibility
 	tempRegistry := NewRegistry()
 	oldLoadTools(tempRegistry)
-	
+
 	// Wrap old tools in a compatibility plugin
 	manager.RegisterPlugin(&legacyPlugin{registry: tempRegistry})
 }

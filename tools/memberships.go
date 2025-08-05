@@ -143,9 +143,9 @@ type UpdateMembershipTool struct {
 
 func NewUpdateMembershipTool() *UpdateMembershipTool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"membershipId":  StringProperty("The unique identifier for the membership."),
-		"isModerator":   BooleanProperty("Whether the person is a room moderator."),
-		"isRoomHidden":  BooleanProperty("Whether the room is hidden in the Webex app."),
+		"membershipId": StringProperty("The unique identifier for the membership."),
+		"isModerator":  BooleanProperty("Whether the person is a room moderator."),
+		"isRoomHidden": BooleanProperty("Whether the room is hidden in the Webex app."),
 	}, []string{"membershipId"})
 
 	return &UpdateMembershipTool{
