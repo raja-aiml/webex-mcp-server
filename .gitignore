@@ -1,0 +1,39 @@
+## Ignore build artifacts
+/build/
+
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, coverage reports
+*.test
+*.out
+coverage.out
+
+# Dependency directories
+/vendor/
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Environment files
+.env
+.env.*.local
+
+# Logs
+*.log
+
+# IDE/editor files
+*~
+*.swp
+.vscode/
+.idea/
+*.iml
+
+# OS files
+.DS_Store
+Thumbs.db
