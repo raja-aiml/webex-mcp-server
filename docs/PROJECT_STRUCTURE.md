@@ -4,9 +4,7 @@ This project follows Go best practices with a clean, modular architecture:
 
 ```
 webex-mcp-server-go/
-├── cmd/
-│   └── webex-mcp-server/
-│       └── main.go                 # Application entry point
+├── main.go                         # Application entry point
 ├── internal/                       # Private packages (not importable by other projects)
 │   ├── app/
 │   │   └── app.go                 # Application lifecycle management
@@ -48,6 +46,8 @@ webex-mcp-server-go/
 │   ├── benchmark.sh               # Performance benchmarking
 │   ├── test_server.sh             # Test server setup
 │   └── update_imports.sh          # Import path migration
+├── docs/                           # Documentation
+│   └── PROJECT_STRUCTURE.md       # This file
 ├── build/                          # Build artifacts (gitignored)
 ├── .env.example                    # Environment configuration template
 ├── .gitignore                      # Git ignore patterns
@@ -59,8 +59,8 @@ webex-mcp-server-go/
 
 ## Package Descriptions
 
-### cmd/webex-mcp-server
-The main application entry point. Contains minimal code - just flag parsing and application initialization.
+### main.go
+The main application entry point. Contains minimal code - just flag parsing and application initialization. Keeping it in the root is a common Go pattern for single-binary applications.
 
 ### internal/app
 Application lifecycle management including:
@@ -103,12 +103,13 @@ Webex API client:
 
 ## Design Principles
 
-1. **Standard Go Project Layout**: Follows community conventions with `cmd/` and `internal/` directories
-2. **Dependency Injection**: Interfaces and providers for testability
-3. **SOLID Principles**: Single responsibility, open/closed, interface segregation
-4. **DRY (Don't Repeat Yourself)**: Shared base functionality, generic implementations
-5. **Clean Architecture**: Clear separation of concerns between packages
-6. **12-Factor App**: Configuration through environment, stateless processes
+1. **Simple Go Project Layout**: Single binary with main.go in root
+2. **Internal Packages**: Private implementation details in `internal/`
+3. **Dependency Injection**: Interfaces and providers for testability
+4. **SOLID Principles**: Single responsibility, open/closed, interface segregation
+5. **DRY (Don't Repeat Yourself)**: Shared base functionality, generic implementations
+6. **Clean Architecture**: Clear separation of concerns between packages
+7. **12-Factor App**: Configuration through environment, stateless processes
 
 ## Build and Run
 
