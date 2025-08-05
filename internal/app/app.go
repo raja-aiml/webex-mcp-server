@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/raja-aiml/webex-mcp-server-go/server"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/server"
 )
 
 // Config holds the application configuration

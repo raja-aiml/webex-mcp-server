@@ -80,7 +80,7 @@ ifeq ($(SUBCMD),all)
 else ifeq ($(SUBCMD),)
 	@echo "Building $(BINARY_NAME)..."
 	@mkdir -p $(BUILD_DIR)
-	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME) -v .
+	$(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME) -v ./cmd/$(BINARY_NAME)
 else
 	@echo "Unknown build subcommand: $(SUBCMD)"
 	@echo "Available: build, build all"
@@ -90,10 +90,10 @@ endif
 build-all:
 	@echo "Building for multiple platforms..."
 	@mkdir -p $(BUILD_DIR)
-	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 -v
-	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 -v
-	GOOS=darwin GOARCH=arm64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 -v
-	GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe -v
+	GOOS=linux GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-linux-amd64 -v ./cmd/$(BINARY_NAME)
+	GOOS=darwin GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-amd64 -v ./cmd/$(BINARY_NAME)
+	GOOS=darwin GOARCH=arm64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-darwin-arm64 -v ./cmd/$(BINARY_NAME)
+	GOOS=windows GOARCH=amd64 $(GOBUILD) -o $(BUILD_DIR)/$(BINARY_NAME)-windows-amd64.exe -v ./cmd/$(BINARY_NAME)
 
 # Support for "make build all"
 all:
@@ -109,7 +109,7 @@ ifeq ($(SUBCMD),http)
 	@$(MAKE) -s run-http
 else ifeq ($(SUBCMD),)
 	@echo "Running $(BINARY_NAME) in stdio mode..."
-	$(GOCMD) run main.go
+	$(GOCMD) run ./cmd/$(BINARY_NAME)
 else
 	@echo "Unknown run subcommand: $(SUBCMD)"
 	@echo "Available: run, run http"
@@ -118,7 +118,7 @@ endif
 ## run-http: Run the application in HTTP/SSE mode
 run-http:
 	@echo "Running $(BINARY_NAME) in HTTP/SSE mode..."
-	$(GOCMD) run main.go -http :3001
+	$(GOCMD) run ./cmd/$(BINARY_NAME) -http :3001
 
 # Support for "make run http"
 http:

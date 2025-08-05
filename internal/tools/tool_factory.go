@@ -2,8 +2,8 @@ package tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/config"
-	"github.com/raja-aiml/webex-mcp-server-go/webex"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
 // ToolBase provides common functionality for all tools

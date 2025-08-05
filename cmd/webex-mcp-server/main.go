@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/raja-aiml/webex-mcp-server-go/app"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/app"
 )
 
 const (

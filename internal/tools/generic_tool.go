@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/webex"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
 // GenericTool provides a generic implementation for tools

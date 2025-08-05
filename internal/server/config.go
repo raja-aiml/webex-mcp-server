@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/joho/godotenv"
-	"github.com/raja-aiml/webex-mcp-server-go/config"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
 )
 
 // InitializeConfig loads environment variables and validates configuration

@@ -9,7 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/raja-aiml/webex-mcp-server-go/config"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
 	"github.com/valyala/fasthttp"
 )
 

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/raja-aiml/webex-mcp-server-go/handlers"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/handlers"
 )
 
 // RunHTTPServer starts the HTTP server with context support

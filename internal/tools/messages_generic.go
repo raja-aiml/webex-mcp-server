@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/webex"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
 // Example of using generic tools for messages
