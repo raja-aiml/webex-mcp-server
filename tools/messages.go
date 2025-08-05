@@ -67,11 +67,7 @@ func (t *ListMessagesTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListMessagesTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateMessageTool creates a new message in a Webex room
@@ -118,11 +114,7 @@ func (t *CreateMessageTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreateMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteMessageTool deletes a message from Webex
@@ -162,11 +154,7 @@ func (t *DeleteMessageTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeleteMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // EditMessageTool edits an existing message in Webex
@@ -215,11 +203,7 @@ func (t *EditMessageTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *EditMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetMessageDetailsTool gets details of a specific message
@@ -254,11 +238,7 @@ func (t *GetMessageDetailsTool) Execute(args json.RawMessage) (interface{}, erro
 }
 
 func (t *GetMessageDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // ListDirectMessagesTool lists direct messages between two people
@@ -318,9 +298,5 @@ func (t *ListDirectMessagesTool) Execute(args json.RawMessage) (interface{}, err
 }
 
 func (t *ListDirectMessagesTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

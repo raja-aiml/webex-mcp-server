@@ -44,11 +44,7 @@ func (t *CreateAttachmentActionTool) Execute(args json.RawMessage) (interface{},
 }
 
 func (t *CreateAttachmentActionTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetAttachmentActionDetailsTool gets attachment action details
@@ -83,9 +79,5 @@ func (t *GetAttachmentActionDetailsTool) Execute(args json.RawMessage) (interfac
 }
 
 func (t *GetAttachmentActionDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

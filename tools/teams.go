@@ -43,11 +43,7 @@ func (t *ListTeamsTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListTeamsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateTeamTool creates a new team
@@ -79,11 +75,7 @@ func (t *CreateTeamTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreateTeamTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetTeamDetailsTool gets team details
@@ -118,11 +110,7 @@ func (t *GetTeamDetailsTool) Execute(args json.RawMessage) (interface{}, error) 
 }
 
 func (t *GetTeamDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateTeamTool updates a team
@@ -164,11 +152,7 @@ func (t *UpdateTeamTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *UpdateTeamTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteTeamTool deletes a team
@@ -207,9 +191,5 @@ func (t *DeleteTeamTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeleteTeamTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

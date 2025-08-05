@@ -43,11 +43,7 @@ func (t *ListWebhooksTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListWebhooksTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateWebhookTool creates a webhook
@@ -88,11 +84,7 @@ func (t *CreateWebhookTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreateWebhookTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetWebhookDetailsTool gets webhook details
@@ -127,11 +119,7 @@ func (t *GetWebhookDetailsTool) Execute(args json.RawMessage) (interface{}, erro
 }
 
 func (t *GetWebhookDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateWebhookTool updates a webhook
@@ -176,11 +164,7 @@ func (t *UpdateWebhookTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *UpdateWebhookTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteWebhookTool deletes a webhook
@@ -219,9 +203,5 @@ func (t *DeleteWebhookTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeleteWebhookTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

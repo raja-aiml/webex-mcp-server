@@ -42,11 +42,7 @@ func (t *ListRoomTabsTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListRoomTabsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateRoomTabTool creates a room tab
@@ -84,11 +80,7 @@ func (t *CreateRoomTabTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreateRoomTabTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetRoomTabDetailsTool gets room tab details
@@ -123,11 +115,7 @@ func (t *GetRoomTabDetailsTool) Execute(args json.RawMessage) (interface{}, erro
 }
 
 func (t *GetRoomTabDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateRoomTabTool updates a room tab
@@ -170,11 +158,7 @@ func (t *UpdateRoomTabTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *UpdateRoomTabTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteRoomTabTool deletes a room tab
@@ -213,9 +197,5 @@ func (t *DeleteRoomTabTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeleteRoomTabTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

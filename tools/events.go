@@ -68,11 +68,7 @@ func (t *ListEventsTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListEventsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetEventDetailsTool gets event details
@@ -107,9 +103,5 @@ func (t *GetEventDetailsTool) Execute(args json.RawMessage) (interface{}, error)
 }
 
 func (t *GetEventDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

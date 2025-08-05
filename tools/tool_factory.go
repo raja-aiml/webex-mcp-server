@@ -1,9 +1,6 @@
 package tools
 
 import (
-	"encoding/json"
-	"fmt"
-
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server-go/config"
 	"github.com/raja-aiml/webex-mcp-server-go/webex"
@@ -44,15 +41,8 @@ func (t *ToolBase) Description() string { return t.description }
 // GetInputSchema returns the JSON schema
 func (t *ToolBase) GetInputSchema() interface{} { return t.schema }
 
-// ExecuteWithMap converts map to JSON and delegates to Execute
-func (t *ToolBase) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	_, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	// This will be overridden by concrete implementations
-	return nil, fmt.Errorf("Execute not implemented for %s", t.name)
-}
+// Note: ExecuteWithMap is not implemented here because each tool that embeds ToolBase
+// should implement it by calling ExecuteWithMapBase(tool, args) from base.go
 
 // SimpleSchema creates a basic object schema with properties
 func SimpleSchema(properties map[string]*jsonschema.Schema, required []string) *jsonschema.Schema {

@@ -56,11 +56,7 @@ func (t *ListRoomsTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListRoomsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateRoomTool creates a new Webex room
@@ -98,11 +94,7 @@ func (t *CreateRoomTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreateRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetRoomDetailsTool gets details of a specific room
@@ -137,11 +129,7 @@ func (t *GetRoomDetailsTool) Execute(args json.RawMessage) (interface{}, error) 
 }
 
 func (t *GetRoomDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateRoomTool updates a room
@@ -190,11 +178,7 @@ func (t *UpdateRoomTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *UpdateRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteRoomTool deletes a room
@@ -234,11 +218,7 @@ func (t *DeleteRoomTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeleteRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetRoomMeetingDetailsTool gets meeting details for a room
@@ -273,9 +253,5 @@ func (t *GetRoomMeetingDetailsTool) Execute(args json.RawMessage) (interface{}, 
 }
 
 func (t *GetRoomMeetingDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

@@ -44,11 +44,7 @@ func (t *CreateECMFolderConfigurationTool) Execute(args json.RawMessage) (interf
 }
 
 func (t *CreateECMFolderConfigurationTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetECMFolderDetailsTool gets ECM folder details
@@ -83,11 +79,7 @@ func (t *GetECMFolderDetailsTool) Execute(args json.RawMessage) (interface{}, er
 }
 
 func (t *GetECMFolderDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // ListECMFolderTool lists ECM folders
@@ -123,11 +115,7 @@ func (t *ListECMFolderTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListECMFolderTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateECMLinkedFolderTool updates an ECM linked folder
@@ -169,11 +157,7 @@ func (t *UpdateECMLinkedFolderTool) Execute(args json.RawMessage) (interface{}, 
 }
 
 func (t *UpdateECMLinkedFolderTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UnlinkECMLinkedFolderTool unlinks an ECM linked folder
@@ -212,9 +196,5 @@ func (t *UnlinkECMLinkedFolderTool) Execute(args json.RawMessage) (interface{}, 
 }
 
 func (t *UnlinkECMLinkedFolderTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

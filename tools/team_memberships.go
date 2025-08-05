@@ -49,11 +49,7 @@ func (t *ListTeamMembershipsTool) Execute(args json.RawMessage) (interface{}, er
 }
 
 func (t *ListTeamMembershipsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreateTeamMembershipTool adds someone to a team
@@ -93,11 +89,7 @@ func (t *CreateTeamMembershipTool) Execute(args json.RawMessage) (interface{}, e
 }
 
 func (t *CreateTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetTeamMembershipDetailsTool gets team membership details
@@ -132,11 +124,7 @@ func (t *GetTeamMembershipDetailsTool) Execute(args json.RawMessage) (interface{
 }
 
 func (t *GetTeamMembershipDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdateTeamMembershipTool updates a team membership
@@ -178,11 +166,7 @@ func (t *UpdateTeamMembershipTool) Execute(args json.RawMessage) (interface{}, e
 }
 
 func (t *UpdateTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeleteTeamMembershipTool removes someone from a team
@@ -221,9 +205,5 @@ func (t *DeleteTeamMembershipTool) Execute(args json.RawMessage) (interface{}, e
 }
 
 func (t *DeleteTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

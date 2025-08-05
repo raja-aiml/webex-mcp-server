@@ -68,11 +68,7 @@ func (t *ListPeopleTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *ListPeopleTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // CreatePersonTool creates a new person/user account
@@ -139,11 +135,7 @@ func (t *CreatePersonTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *CreatePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetPersonDetailsTool gets details for a specific person
@@ -178,11 +170,7 @@ func (t *GetPersonDetailsTool) Execute(args json.RawMessage) (interface{}, error
 }
 
 func (t *GetPersonDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // UpdatePersonTool updates a person's details
@@ -233,11 +221,7 @@ func (t *UpdatePersonTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *UpdatePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // DeletePersonTool deletes a person
@@ -279,11 +263,7 @@ func (t *DeletePersonTool) Execute(args json.RawMessage) (interface{}, error) {
 }
 
 func (t *DeletePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
 
 // GetMyOwnDetailsTool gets the current user's details
@@ -304,9 +284,5 @@ func (t *GetMyOwnDetailsTool) Execute(args json.RawMessage) (interface{}, error)
 }
 
 func (t *GetMyOwnDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }

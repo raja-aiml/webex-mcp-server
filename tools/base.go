@@ -2,22 +2,20 @@ package tools
 
 import (
 	"encoding/json"
+	"fmt"
 )
 
-// BaseTool provides common functionality for all tools
-type BaseTool struct{}
-
-// ExecuteWithMap provides a default implementation that converts map to JSON
-func (b *BaseTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	// This will be overridden by the actual tool implementation
-	return nil, nil
+// ToolWithExecute interface for tools that have Execute method
+type ToolWithExecute interface {
+	Execute(args json.RawMessage) (interface{}, error)
 }
 
-// Helper method for tools to call from their ExecuteWithMap
-func ExecuteWithMapHelper(tool interface{ Execute(json.RawMessage) (interface{}, error) }, args map[string]interface{}) (interface{}, error) {
-	jsonData, err := json.Marshal(args)
+// ExecuteWithMapBase provides the common ExecuteWithMap implementation
+// This function should be called by concrete tool types that embed ToolBase
+func ExecuteWithMapBase(tool ToolWithExecute, args map[string]interface{}) (interface{}, error) {
+	argsJSON, err := json.Marshal(args)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
 	}
-	return tool.Execute(jsonData)
+	return tool.Execute(argsJSON)
 }

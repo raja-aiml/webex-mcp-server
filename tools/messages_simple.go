@@ -75,9 +75,5 @@ func (t *ListMessagesSimple) Execute(args json.RawMessage) (interface{}, error) 
 
 // ExecuteWithMap delegates to Execute
 func (t *ListMessagesSimple) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	argsJSON, err := json.Marshal(args)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal arguments: %w", err)
-	}
-	return t.Execute(argsJSON)
+	return ExecuteWithMapBase(t, args)
 }
