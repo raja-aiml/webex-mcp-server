@@ -33,12 +33,20 @@ func (p *messagingPlugin) Version() string { return "1.0.0" }
 
 func (p *messagingPlugin) Register(registry *Registry) error {
 	tools := []Tool{
+		// Original tools
 		NewListMessagesTool(),
 		NewCreateMessageTool(),
 		NewDeleteMessageTool(),
 		NewEditMessageTool(),
 		NewGetMessageDetailsTool(),
 		NewListDirectMessagesTool(),
+		
+		// Generic implementations (examples)
+		// Uncomment to test generic versions
+		// NewListMessagesToolGeneric(),
+		// NewCreateMessageToolGeneric(),
+		// NewDeleteMessageToolGeneric(),
+		// NewGetMessageDetailsToolGeneric(),
 	}
 	
 	for _, tool := range tools {
