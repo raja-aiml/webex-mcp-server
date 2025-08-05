@@ -56,6 +56,7 @@ help:
 	@echo "  dev fmt        Format Go code"
 	@echo "  dev lint       Lint code (requires golangci-lint)"
 	@echo "  dev test       Run tests"
+	@echo "  test-coverage  Run tests with coverage report"
 	@echo ""
 	@echo "OTHER COMMANDS:"
 	@echo "  clean          Remove build artifacts"
@@ -251,6 +252,14 @@ dev-lint:
 dev-test:
 	@echo "Running tests..."
 	$(GOTEST) -v ./...
+
+## test-coverage: Run tests with coverage report
+test-coverage:
+	@echo "Running tests with coverage..."
+	@$(GOTEST) -v -race -coverprofile=coverage.out -covermode=atomic ./...
+	@go tool cover -html=coverage.out -o coverage.html
+	@echo "Coverage report generated: coverage.html"
+	@go tool cover -func=coverage.out | grep total | awk '{print "Total coverage: " $$3}'
 
 ## dev-all: Run format, lint, and test
 dev-all: dev-fmt dev-lint dev-test
