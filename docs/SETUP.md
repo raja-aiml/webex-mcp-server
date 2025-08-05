@@ -1,19 +1,20 @@
-# Webex MCP Server Setup Guide
+# Webex MCP Server Setup
 
-## 1. Build the Server
+## Quick Setup
 
+### 1. Build
 ```bash
 make build
 ```
 
-## 2. Edit Claude Desktop Config
+### 2. Configure Claude Desktop
 
 Find your config file:
 - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 - **Linux**: `~/.config/Claude/claude_desktop_config.json`
 
-Add this configuration:
+Add:
 ```json
 {
   "mcpServers": {
@@ -27,29 +28,34 @@ Add this configuration:
 }
 ```
 
-## 3. Restart Claude Desktop
+### 3. Restart Claude Desktop
+Quit completely and restart.
 
-- Completely quit Claude (not just close window)
-- Start Claude again
-
-## 4. Use It!
-
-In Claude, you can now say:
+### 4. Use
 - "List my Webex rooms"
-- "Send a message to the Engineering team"
-- "Show recent messages in Project Alpha"
-- "Create a new room called Planning"
-
-## Important Notes
-
-- The `command` path must be absolute (e.g., `/Users/john/webex-mcp-server-go/build/webex-mcp-server`)
-- Get your Webex API token from [developer.webex.com](https://developer.webex.com)
-- Make sure the binary is executable: `chmod +x /path/to/webex-mcp-server`
+- "Send a message to [room name]"
+- "Show recent messages"
 
 ## Troubleshooting
 
-If Claude doesn't see the Webex tools:
-1. Check your JSON syntax is valid
-2. Ensure the path to the binary is correct and absolute
-3. Verify your Webex API token is valid
-4. Check Claude Desktop developer tools (View > Toggle Developer Tools) for errors
+**Not working?**
+1. Path must be absolute
+2. Check JSON syntax: `python3 -m json.tool ~/Library/Application\ Support/Claude/claude_desktop_config.json`
+3. Make executable: `chmod +x /path/to/webex-mcp-server`
+4. Test: `./build/webex-mcp-server` (should show stdio mode)
+5. Check Claude Developer Tools (View > Toggle Developer Tools)
+
+**Get Webex Token**
+1. Visit [developer.webex.com](https://developer.webex.com)
+2. Sign in → My Webex Apps → Personal Access Token
+
+## Testing
+
+```bash
+# Test basic functionality
+./scripts/test.sh
+
+# Test specific component
+./scripts/test.sh health  # Health endpoint
+./scripts/test.sh stdio   # Stdio mode
+./scripts/test.sh bench   # Performance

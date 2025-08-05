@@ -171,21 +171,16 @@ The server provides the following tool categories:
 
 ### Quick Test
 ```bash
-# Test stdio mode
-./scripts/test_stdio.sh
+# Run all tests
+./scripts/test.sh
 
-# Test health endpoint (HTTP mode)
-make run http  # Terminal 1
-curl http://localhost:3001/health  # Terminal 2
+# Test specific components
+./scripts/test.sh stdio   # Test stdio mode
+./scripts/test.sh health  # Test health endpoint
+./scripts/test.sh bench   # Run benchmark
 ```
 
-### Claude Desktop Integration
-Add to your Claude Desktop config to use all features:
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
-- Linux: `~/.config/Claude/claude_desktop_config.json`
-
-See [Testing Guide](docs/TESTING_CORRECTED.md) for details.
+See [Setup Guide](docs/SETUP.md) for detailed instructions and troubleshooting.
 
 ## Development
 
