@@ -1,0 +1,57 @@
+services:
+  webex-mcp-server:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+    image: webex-mcp-server:latest
+    container_name: webex-mcp-server
+    ports:
+      - "${PORT:-3001}:3001"
+    env_file:
+      - .env
+    environment:
+      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
+      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
+      - PORT=${PORT:-3001}
+      - USE_FASTHTTP=${USE_FASTHTTP:-true}
+    command: ["-http", ":3001"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - webex-net
+
+  # Development mode with live reload (optional)
+  webex-mcp-server-dev:
+    build:
+      context: ../..
+      dockerfile: deployment/docker/Dockerfile
+      target: builder
+    image: webex-mcp-server:dev
+    container_name: webex-mcp-server-dev
+    ports:
+      - "${PORT:-8084}:8084"
+    env_file:
+      - .env
+    environment:
+      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
+      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
+      - PORT=${PORT:-8084}
+      - USE_FASTHTTP=${USE_FASTHTTP:-true}
+    volumes:
+      - .:/app
+      - /app/build
+    working_dir: /app
+    command: ["go", "run", "main.go", "-http", ":3001"]
+    networks:
+      - webex-net
+    profiles:
+      - dev
+
+networks:
+  webex-net:
+    driver: bridge

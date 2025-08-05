@@ -5,22 +5,22 @@ package tools
 func LoadDefaultPlugins(manager *PluginManager) {
 	// Register messaging plugin
 	manager.RegisterPlugin(&messagingPlugin{})
-	
+
 	// Register rooms plugin
 	manager.RegisterPlugin(&roomsPlugin{})
-	
+
 	// Register people plugin
 	manager.RegisterPlugin(&peoplePlugin{})
-	
+
 	// Register membership plugin
 	manager.RegisterPlugin(&membershipPlugin{})
-	
+
 	// Register teams plugin
 	manager.RegisterPlugin(&teamsPlugin{})
-	
+
 	// Register webhooks plugin
 	manager.RegisterPlugin(&webhooksPlugin{})
-	
+
 	// Register miscellaneous tools plugin
 	manager.RegisterPlugin(&miscPlugin{})
 }
@@ -40,7 +40,7 @@ func (p *messagingPlugin) Register(registry *Registry) error {
 		NewEditMessageTool(),
 		NewGetMessageDetailsTool(),
 		NewListDirectMessagesTool(),
-		
+
 		// Generic implementations (examples)
 		// Uncomment to test generic versions
 		// NewListMessagesToolGeneric(),
@@ -48,7 +48,7 @@ func (p *messagingPlugin) Register(registry *Registry) error {
 		// NewDeleteMessageToolGeneric(),
 		// NewGetMessageDetailsToolGeneric(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -72,7 +72,7 @@ func (p *roomsPlugin) Register(registry *Registry) error {
 		NewDeleteRoomTool(),
 		NewGetRoomMeetingDetailsTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -96,7 +96,7 @@ func (p *peoplePlugin) Register(registry *Registry) error {
 		NewDeletePersonTool(),
 		NewGetMyOwnDetailsTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -124,7 +124,7 @@ func (p *membershipPlugin) Register(registry *Registry) error {
 		NewUpdateTeamMembershipTool(),
 		NewDeleteTeamMembershipTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -147,7 +147,7 @@ func (p *teamsPlugin) Register(registry *Registry) error {
 		NewUpdateTeamTool(),
 		NewDeleteTeamTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -170,7 +170,7 @@ func (p *webhooksPlugin) Register(registry *Registry) error {
 		NewUpdateWebhookTool(),
 		NewDeleteWebhookTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err
@@ -206,7 +206,7 @@ func (p *miscPlugin) Register(registry *Registry) error {
 		NewUpdateECMLinkedFolderTool(),
 		NewUnlinkECMLinkedFolderTool(),
 	}
-	
+
 	for _, tool := range tools {
 		if err := registry.Register(tool); err != nil {
 			return err

@@ -148,7 +148,7 @@ type IDParams struct {
 // NewListTool creates a generic list tool
 func NewListTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema) *GenericTool[T] {
 	schema := SimpleSchema(properties, []string{})
-	
+
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		queryParams := QueryParams(params)
 		return client.Get(endpoint, queryParams)
@@ -169,7 +169,7 @@ func NewGetTool(name, description, endpoint, idField string) *GenericTool[IDPara
 // NewCreateTool creates a generic create tool
 func NewCreateTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema, required []string) *GenericTool[T] {
 	schema := SimpleSchema(properties, required)
-	
+
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		return client.Post(endpoint, params)
 	})
@@ -183,17 +183,17 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 		allProperties[k] = v
 	}
 	allProperties[idField] = StringProperty("The ID of the item to update")
-	
+
 	// Add ID field to required
 	allRequired := append([]string{idField}, required...)
-	
+
 	schema := SimpleSchema(allProperties, allRequired)
-	
+
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		// Extract ID using reflection
 		v := reflect.ValueOf(params).Elem()
 		idValue := ""
-		
+
 		// Find the ID field
 		for i := 0; i < v.NumField(); i++ {
 			field := v.Type().Field(i)
@@ -202,11 +202,11 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 				break
 			}
 		}
-		
+
 		if idValue == "" {
 			return nil, fmt.Errorf("%s is required", idField)
 		}
-		
+
 		return client.Put(fmt.Sprintf("%s/%s", endpoint, idValue), params)
 	})
 }

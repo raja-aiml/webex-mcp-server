@@ -1,0 +1,54 @@
+# Git
+.git
+.gitignore
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build artifacts
+build/
+releases/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test files
+*_test.go
+*.test
+*.out
+coverage.*
+
+# Documentation
+*.md
+!README.md
+docs/
+
+# Scripts and configs
+*.sh
+!scripts/release.sh
+benchmark.sh
+test_server.sh
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Go specific
+vendor/
+go.work
+go.work.sum

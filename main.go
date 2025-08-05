@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
@@ -52,12 +53,30 @@ func main() {
 	registerTools(server, toolRegistry)
 
 	if httpAddr != "" {
-		// HTTP/SSE mode
+		// HTTP/SSE mode with health check
+		mux := http.NewServeMux()
+
+		// Health check endpoint
+		mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			response := map[string]interface{}{
+				"status":  "healthy",
+				"service": ServerName,
+				"version": ServerVersion,
+				"time":    time.Now().UTC().Format(time.RFC3339),
+			}
+			json.NewEncoder(w).Encode(response)
+		})
+
+		// MCP handler
 		handler := mcp.NewStreamableHTTPHandler(func(*http.Request) *mcp.Server {
 			return server
 		}, nil)
+		mux.Handle("/", handler)
+
 		log.Printf("MCP server listening at %s (using fasthttp client for Webex API)", httpAddr)
-		if err := http.ListenAndServe(httpAddr, handler); err != nil {
+		if err := http.ListenAndServe(httpAddr, mux); err != nil {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 	} else {

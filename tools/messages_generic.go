@@ -40,15 +40,15 @@ func NewListMessagesToolGeneric() Tool {
 
 // CreateMessageParams for the generic create message tool
 type CreateMessageParams struct {
-	RoomId       string                   `json:"roomId,omitempty"`
-	ParentId     string                   `json:"parentId,omitempty"`
-	ToPersonId   string                   `json:"toPersonId,omitempty"`
-	ToPersonEmail string                  `json:"toPersonEmail,omitempty"`
-	Text         string                   `json:"text,omitempty"`
-	Markdown     string                   `json:"markdown,omitempty"`
-	HTML         string                   `json:"html,omitempty"`
-	Files        []string                 `json:"files,omitempty"`
-	Attachments  []map[string]interface{} `json:"attachments,omitempty"`
+	RoomId        string                   `json:"roomId,omitempty"`
+	ParentId      string                   `json:"parentId,omitempty"`
+	ToPersonId    string                   `json:"toPersonId,omitempty"`
+	ToPersonEmail string                   `json:"toPersonEmail,omitempty"`
+	Text          string                   `json:"text,omitempty"`
+	Markdown      string                   `json:"markdown,omitempty"`
+	HTML          string                   `json:"html,omitempty"`
+	Files         []string                 `json:"files,omitempty"`
+	Attachments   []map[string]interface{} `json:"attachments,omitempty"`
 }
 
 // NewCreateMessageToolGeneric creates a create message tool using generics
