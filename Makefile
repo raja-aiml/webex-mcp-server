@@ -80,7 +80,9 @@ build-all:
 # Docker commands
 docker-build:
 	@echo "Building Docker image..."
+	@cp deployment/docker/.dockerignore .dockerignore 2>/dev/null || true
 	docker build -f deployment/docker/Dockerfile -t $(BINARY_NAME):latest .
+	@rm -f .dockerignore
 
 docker-run:
 	@echo "Running in Docker..."

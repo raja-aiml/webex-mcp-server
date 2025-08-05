@@ -29,8 +29,6 @@ docs/
 # Scripts and configs
 *.sh
 !scripts/release.sh
-benchmark.sh
-test_server.sh
 
 # IDE
 .vscode/

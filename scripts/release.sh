@@ -122,9 +122,15 @@ EOF
 build_docker_images() {
     log_info "Building Docker images..."
     
+    # Copy .dockerignore temporarily for build
+    cp deployment/docker/.dockerignore .dockerignore 2>/dev/null || true
+    
     # Build main image
     docker build -f deployment/docker/Dockerfile -t ${DOCKER_IMAGE_NAME}:${VERSION} .
     docker tag ${DOCKER_IMAGE_NAME}:${VERSION} ${DOCKER_IMAGE_NAME}:latest
+    
+    # Clean up temporary .dockerignore
+    rm -f .dockerignore
     
     # Tag for registry if specified
     if [ -n "${DOCKER_REGISTRY}" ]; then
