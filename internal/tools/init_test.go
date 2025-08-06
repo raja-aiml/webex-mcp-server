@@ -2,6 +2,7 @@ package tools
 
 import (
 	"os"
+	"sync"
 	"testing"
 
 	"github.com/raja-aiml/webex-mcp-server/internal/config"
@@ -35,6 +36,10 @@ func TestMustInitializeDefaultClient_Success(t *testing.T) {
 	// Reset config and client
 	config.ResetForTesting()
 	defaultClient = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	
 	// Set up valid environment
 	os.Setenv("WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
@@ -47,6 +52,12 @@ func TestMustInitializeDefaultClient_Success(t *testing.T) {
 		}
 		config.ResetForTesting()
 		defaultClient = nil
+		clientOnce = sync.Once{}
+		clientErr = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
+		clientOnce = sync.Once{}
+		clientErr = nil
 	}()
 	
 	// Should not panic with valid config
@@ -67,6 +78,8 @@ func TestInitializeDefaultClient_Error(t *testing.T) {
 	// Reset config and client
 	config.ResetForTesting()
 	defaultClient = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	
 	// Test without API key
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "")
@@ -74,6 +87,10 @@ func TestInitializeDefaultClient_Error(t *testing.T) {
 		cleanup()
 		config.ResetForTesting()
 		defaultClient = nil
+		clientOnce = sync.Once{}
+		clientErr = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	}()
 	
 	err := InitializeDefaultClient()
@@ -85,6 +102,8 @@ func TestInitializeDefaultClient_Error(t *testing.T) {
 func TestGetDefaultClient_Error(t *testing.T) {
 	// Reset client
 	defaultClient = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	config.ResetForTesting()
 	
 	// Test without API key
@@ -93,6 +112,10 @@ func TestGetDefaultClient_Error(t *testing.T) {
 		cleanup()
 		config.ResetForTesting()
 		defaultClient = nil
+		clientOnce = sync.Once{}
+		clientErr = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	}()
 	
 	_, err := getDefaultClient()

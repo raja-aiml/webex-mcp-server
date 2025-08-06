@@ -1,6 +1,7 @@
 package tools
 
 import (
+	"sync"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
@@ -255,10 +256,16 @@ func TestSimpleSchema_ComplexExample(t *testing.T) {
 func TestToolBase_WithNilClient(t *testing.T) {
 	// Set up test environment with API key
 	config.ResetForTesting()
+	defaultClient = nil
+	clientOnce = sync.Once{}
+	clientErr = nil
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
 	defer func() {
 		cleanup()
 		config.ResetForTesting()
+		defaultClient = nil
+		clientOnce = sync.Once{}
+		clientErr = nil
 	}()
 	
 	tool := &ToolBase{

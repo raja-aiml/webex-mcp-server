@@ -298,7 +298,7 @@ func TestClient_buildURL(t *testing.T) {
 			}
 
 			// For params, order might vary, so we need to check if all params are present
-			if tt.params != nil && len(tt.params) > 0 {
+			if len(tt.params) > 0 {
 				if len(got) < len("https://api.webex.com/test?") {
 					t.Errorf("buildURL() = %v, want params in URL", got)
 				}
