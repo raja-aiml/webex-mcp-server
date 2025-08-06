@@ -90,7 +90,8 @@ func TestGetWebexToken(t *testing.T) {
 			cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", tt.envValue)
 			defer cleanup()
 
-			if got := GetWebexToken(); got != tt.want {
+			got, _ := GetWebexToken()
+			if got != tt.want {
 				t.Errorf("GetWebexToken() = %v, want %v", got, tt.want)
 			}
 		})
@@ -135,7 +136,8 @@ func TestGetWebexURL(t *testing.T) {
 			cleanup := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
 			defer cleanup()
 
-			if got := GetWebexURL(tt.endpoint); got != tt.want {
+			got, _ := GetWebexURL(tt.endpoint)
+			if got != tt.want {
 				t.Errorf("GetWebexURL() = %v, want %v", got, tt.want)
 			}
 		})
@@ -146,7 +148,7 @@ func TestGetWebexHeaders(t *testing.T) {
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
 	defer cleanup()
 
-	headers := GetWebexHeaders()
+	headers, _ := GetWebexHeaders()
 
 	expectedHeaders := map[string]string{
 		"Authorization": "Bearer test-token",
@@ -240,7 +242,7 @@ func TestGetWebexJSONHeaders(t *testing.T) {
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
 	defer cleanup()
 
-	headers := GetWebexJSONHeaders()
+	headers, _ := GetWebexJSONHeaders()
 
 	expectedHeaders := map[string]string{
 		"Authorization": "Bearer test-token",
@@ -280,7 +282,8 @@ func TestGetWebexBaseURL(t *testing.T) {
 			cleanup := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
 			defer cleanup()
 
-			if got := GetWebexBaseURL(); got != tt.want {
+			got, _ := GetWebexBaseURL()
+			if got != tt.want {
 				t.Errorf("GetWebexBaseURL() = %v, want %v", got, tt.want)
 			}
 		})

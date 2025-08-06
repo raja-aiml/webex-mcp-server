@@ -18,26 +18,28 @@ func TestDefaultProvider(t *testing.T) {
 	provider := NewDefaultProvider()
 
 	t.Run("GetWebexToken", func(t *testing.T) {
-		if got := provider.GetWebexToken(); got != "test-key" {
+		got, _ := provider.GetWebexToken()
+		if got != "test-key" {
 			t.Errorf("GetWebexToken() = %v, want %v", got, "test-key")
 		}
 	})
 
 	t.Run("GetWebexURL", func(t *testing.T) {
-		if got := provider.GetWebexURL("/test"); got != "https://test.api.com/test" {
+		got, _ := provider.GetWebexURL("/test")
+		if got != "https://test.api.com/test" {
 			t.Errorf("GetWebexURL() = %v, want %v", got, "https://test.api.com/test")
 		}
 	})
 
 	t.Run("GetWebexHeaders", func(t *testing.T) {
-		headers := provider.GetWebexHeaders()
+		headers, _ := provider.GetWebexHeaders()
 		if headers["Authorization"] != "Bearer test-key" {
 			t.Errorf("Authorization header = %v, want %v", headers["Authorization"], "Bearer test-key")
 		}
 	})
 
 	t.Run("GetWebexJSONHeaders", func(t *testing.T) {
-		headers := provider.GetWebexJSONHeaders()
+		headers, _ := provider.GetWebexJSONHeaders()
 		if headers["Content-Type"] != "application/json" {
 			t.Errorf("Content-Type header = %v, want %v", headers["Content-Type"], "application/json")
 		}
@@ -47,7 +49,8 @@ func TestDefaultProvider(t *testing.T) {
 	})
 
 	t.Run("GetWebexBaseURL", func(t *testing.T) {
-		if got := provider.GetWebexBaseURL(); got != "https://test.api.com" {
+		got, _ := provider.GetWebexBaseURL()
+		if got != "https://test.api.com" {
 			t.Errorf("GetWebexBaseURL() = %v, want %v", got, "https://test.api.com")
 		}
 	})
@@ -76,15 +79,18 @@ func TestProviderInterface(t *testing.T) {
 		UseFastHTTP: false,
 	}
 
-	if got := mock.GetWebexToken(); got != "mock-key" {
+	got, _ := mock.GetWebexToken()
+	if got != "mock-key" {
 		t.Errorf("GetWebexToken() = %v, want %v", got, "mock-key")
 	}
 
-	if got := mock.GetWebexURL("/endpoint"); got != "https://mock.api/endpoint" {
-		t.Errorf("GetWebexURL() = %v, want %v", got, "https://mock.api/endpoint")
+	got2, _ := mock.GetWebexURL("/endpoint")
+	if got2 != "https://mock.api/endpoint" {
+		t.Errorf("GetWebexURL() = %v, want %v", got2, "https://mock.api/endpoint")
 	}
 
-	if got := mock.GetWebexHeaders()["Authorization"]; got != "Bearer mock-key" {
+	headers, _ := mock.GetWebexHeaders()
+	if got := headers["Authorization"]; got != "Bearer mock-key" {
 		t.Errorf("GetWebexHeaders()[Authorization] = %v, want %v", got, "Bearer mock-key")
 	}
 }

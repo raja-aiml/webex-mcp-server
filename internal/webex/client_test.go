@@ -11,7 +11,10 @@ import (
 
 func TestNewClient(t *testing.T) {
 	t.Run("creates client with default provider", func(t *testing.T) {
-		client := NewClient()
+		client, err := NewClient()
+		if err != nil {
+			t.Fatalf("NewClient() error = %v", err)
+		}
 		if client == nil {
 			t.Error("NewClient() returned nil")
 		}
@@ -52,7 +55,7 @@ func TestNewClientWithConfig(t *testing.T) {
 				},
 			}
 
-			client := NewClientWithConfig(mockProvider)
+			client, _ := NewClientWithConfig(mockProvider)
 			c, ok := client.(*Client)
 			if !ok {
 				t.Fatal("NewClientWithConfig() did not return *Client")
@@ -105,7 +108,7 @@ func TestClient_Get(t *testing.T) {
 		UseFastHTTP: false,
 	}
 
-	client := NewClientWithConfig(mockProvider)
+	client, _ := NewClientWithConfig(mockProvider)
 	
 	result, err := client.Get("/test", map[string]string{
 		"param1": "value1",
@@ -156,7 +159,7 @@ func TestClient_Post(t *testing.T) {
 		UseFastHTTP: false,
 	}
 
-	client := NewClientWithConfig(mockProvider)
+	client, _ := NewClientWithConfig(mockProvider)
 	
 	result, err := client.Post("/test", map[string]interface{}{
 		"key": "value",
@@ -195,7 +198,7 @@ func TestClient_Put(t *testing.T) {
 		UseFastHTTP: false,
 	}
 
-	client := NewClientWithConfig(mockProvider)
+	client, _ := NewClientWithConfig(mockProvider)
 	
 	result, err := client.Put("/test", map[string]interface{}{
 		"update": "data",
@@ -232,7 +235,7 @@ func TestClient_Delete(t *testing.T) {
 		UseFastHTTP: false,
 	}
 
-	client := NewClientWithConfig(mockProvider)
+	client, _ := NewClientWithConfig(mockProvider)
 	
 	err := client.Delete("/test")
 	
@@ -287,7 +290,7 @@ func TestClient_ErrorHandling(t *testing.T) {
 				UseFastHTTP: false,
 			}
 
-			client := NewClientWithConfig(mockProvider)
+			client, _ := NewClientWithConfig(mockProvider)
 			
 			_, err := client.Get("/test", nil)
 			
@@ -345,7 +348,7 @@ func TestClient_buildURL(t *testing.T) {
 	
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := client.buildURL(tt.endpoint, tt.params)
+			got, _ := client.buildURL(tt.endpoint, tt.params)
 			
 			// For params test, just check that both params are present
 			// since map iteration order is not guaranteed
