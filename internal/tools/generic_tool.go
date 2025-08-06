@@ -89,11 +89,21 @@ func isZeroValue(v reflect.Value) bool {
 
 // QueryParams helps build query parameters from a struct
 func QueryParams(params interface{}) map[string]string {
+	if params == nil {
+		return nil
+	}
+	
 	result := make(map[string]string)
 	v := reflect.ValueOf(params)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
 	}
+	
+	// Only process struct types
+	if v.Kind() != reflect.Struct {
+		return nil
+	}
+	
 	t := v.Type()
 
 	for i := 0; i < t.NumField(); i++ {

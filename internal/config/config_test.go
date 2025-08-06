@@ -320,3 +320,81 @@ func TestGetWebexBaseURL(t *testing.T) {
 	}
 }
 
+func TestMustLoad(t *testing.T) {
+	t.Run("panics when config load fails", func(t *testing.T) {
+		ResetForTesting()
+		cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "")
+		defer func() {
+			cleanup()
+			ResetForTesting()
+		}()
+
+		defer func() {
+			if r := recover(); r == nil {
+				t.Errorf("MustLoad() should have panicked")
+			}
+		}()
+
+		MustLoad()
+	})
+
+	t.Run("returns config when successful", func(t *testing.T) {
+		ResetForTesting()
+		cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
+		defer func() {
+			cleanup()
+			ResetForTesting()
+		}()
+
+		cfg := MustLoad()
+		if cfg == nil {
+			t.Errorf("MustLoad() returned nil config")
+		}
+		if cfg.WebexAPIKey != "test-token" {
+			t.Errorf("MustLoad() WebexAPIKey = %v, want test-token", cfg.WebexAPIKey)
+		}
+	})
+}
+
+func TestGetWebexHeaders_ErrorCase(t *testing.T) {
+	ResetForTesting()
+	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "")
+	defer func() {
+		cleanup()
+		ResetForTesting()
+	}()
+
+	_, err := GetWebexHeaders()
+	if err == nil {
+		t.Errorf("GetWebexHeaders() should return error when config fails")
+	}
+}
+
+func TestGetWebexURL_ErrorCase(t *testing.T) {
+	ResetForTesting()
+	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "")
+	defer func() {
+		cleanup()
+		ResetForTesting()
+	}()
+
+	_, err := GetWebexURL("/test")
+	if err == nil {
+		t.Errorf("GetWebexURL() should return error when config fails")
+	}
+}
+
+func TestGetWebexBaseURL_ErrorCase(t *testing.T) {
+	ResetForTesting()
+	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "")
+	defer func() {
+		cleanup()
+		ResetForTesting()
+	}()
+
+	_, err := GetWebexBaseURL()
+	if err == nil {
+		t.Errorf("GetWebexBaseURL() should return error when config fails")
+	}
+}
+
