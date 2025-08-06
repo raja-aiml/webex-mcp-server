@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/config"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 var (
@@ -18,8 +18,12 @@ var (
 // This should be called at application startup
 func InitializeDefaultClient() error {
 	clientOnce.Do(func() {
-		provider := config.NewDefaultProvider()
-		defaultClient, clientErr = webex.NewClientWithConfig(provider)
+		cfg, err := config.Load()
+		if err != nil {
+			clientErr = err
+			return
+		}
+		defaultClient, clientErr = webex.NewClientWithConfig(cfg)
 	})
 	return clientErr
 }

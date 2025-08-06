@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // Mock WebexClient for testing

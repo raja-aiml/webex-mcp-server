@@ -8,7 +8,7 @@ import (
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/tools"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
 // CreateMCPServer creates and configures the MCP server with tools

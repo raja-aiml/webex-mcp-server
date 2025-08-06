@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // ListMessagesParams defines the parameters for listing messages
@@ -63,7 +63,7 @@ func NewCreateMessageTool() Tool {
 		Type: "object",
 		Properties: map[string]*jsonschema.Schema{
 			"contentType": StringProperty("The content type of the attachment."),
-			"content":     ObjectProperty("The content of the attachment."),
+			"content":     ObjectProperty("The content of the attachment.", map[string]*jsonschema.Schema{}),
 		},
 	}
 
@@ -80,7 +80,7 @@ func NewCreateMessageTool() Tool {
 	}
 
 	// Custom validation for this tool
-	schema := SimpleSchema(properties, []string{})
+	schema := SimpleSchema("Post a new message to a room or person.", properties, []string{})
 
 	return NewGenericTool("create_a_message", "Post a new message to a room or person.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
@@ -157,7 +157,7 @@ func NewListDirectMessagesTool() Tool {
 		"max":           IntegerProperty("Limit the maximum number of messages in the response."),
 	}
 
-	schema := SimpleSchema(properties, []string{})
+	schema := SimpleSchema("List messages in a 1:1 space.", properties, []string{})
 
 	return NewGenericTool("list_direct_messages", "List messages in a 1:1 space.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {

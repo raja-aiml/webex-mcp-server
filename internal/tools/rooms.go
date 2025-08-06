@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // ListRoomsParams defines the parameters for listing rooms
@@ -125,7 +125,7 @@ func NewDeleteRoomTool() Tool {
 
 // NewGetRoomMeetingDetailsTool gets meeting details for a room
 func NewGetRoomMeetingDetailsTool() Tool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+	schema := SimpleSchema("Get meeting details for a room.", map[string]*jsonschema.Schema{
 		"roomId": StringProperty("The unique identifier for the room."),
 	}, []string{"roomId"})
 

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // GenericTool provides a generic implementation for tools
@@ -150,7 +150,7 @@ type IDParams struct {
 
 // NewListTool creates a generic list tool
 func NewListTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema) *GenericTool[T] {
-	schema := SimpleSchema(properties, []string{})
+	schema := SimpleSchema("List items from the API endpoint.", properties, []string{})
 
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		queryParams := QueryParams(params)
@@ -160,7 +160,7 @@ func NewListTool[T any](name, description, endpoint string, properties map[strin
 
 // NewGetTool creates a generic get-by-id tool
 func NewGetTool(name, description, endpoint, idField, idDescription string) Tool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+	schema := SimpleSchema("Get a specific item by ID.", map[string]*jsonschema.Schema{
 		idField: StringProperty(idDescription),
 	}, []string{idField})
 
@@ -175,7 +175,7 @@ func NewGetTool(name, description, endpoint, idField, idDescription string) Tool
 
 // NewCreateTool creates a generic create tool
 func NewCreateTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema, required []string) *GenericTool[T] {
-	schema := SimpleSchema(properties, required)
+	schema := SimpleSchema("Create a new item.", properties, required)
 
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		return client.Post(endpoint, params)
@@ -194,7 +194,7 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 	// Add ID field to required
 	allRequired := append([]string{idField}, required...)
 
-	schema := SimpleSchema(allProperties, allRequired)
+	schema := SimpleSchema("Update an existing item.", allProperties, allRequired)
 
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
 		// Extract ID using reflection
@@ -220,7 +220,7 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 
 // NewDeleteTool creates a generic delete tool
 func NewDeleteTool(name, description, endpoint, idField, idDescription string) Tool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+	schema := SimpleSchema("Delete an item by ID.", map[string]*jsonschema.Schema{
 		idField: StringProperty(idDescription),
 	}, []string{idField})
 

@@ -3,7 +3,7 @@ package server
 import (
 	"testing"
 
-	"github.com/raja-aiml/webex-mcp-server-go/internal/testutil"
+	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 )
 
 func TestCreateMCPServer(t *testing.T) {

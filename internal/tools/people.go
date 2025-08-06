@@ -2,7 +2,7 @@ package tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // ListPeopleParams defines the parameters for listing people
@@ -142,7 +142,7 @@ func NewUpdatePersonTool() Tool {
 	properties := map[string]*jsonschema.Schema{
 		"personId":     StringProperty("A unique identifier for the person."),
 		"emails":       ArrayProperty("The email addresses of the person.", StringProperty("")),
-		"phoneNumbers": ArrayProperty("Phone numbers for the person.", ObjectProperty("")),
+		"phoneNumbers": ArrayProperty("Phone numbers for the person.", ObjectProperty("Phone number object", map[string]*jsonschema.Schema{})),
 		"extension":    StringProperty("The Webex Calling extension of the person."),
 		"locationId":   StringProperty("The ID of the location for this person."),
 		"displayName":  StringProperty("The full name of the person."),
@@ -156,7 +156,7 @@ func NewUpdatePersonTool() Tool {
 		"manager":      StringProperty("A manager identifier."),
 		"managerId":    StringProperty("The person ID of the manager."),
 		"title":        StringProperty("The person's title."),
-		"addresses":    ArrayProperty("A person's addresses.", ObjectProperty("")),
+		"addresses":    ArrayProperty("A person's addresses.", ObjectProperty("Address object", map[string]*jsonschema.Schema{})),
 		"loginEnabled": BooleanProperty("Whether the user is allowed to use Webex."),
 	}
 
@@ -183,7 +183,7 @@ func NewDeletePersonTool() Tool {
 
 // NewGetMyOwnDetailsTool gets the current user's details
 func NewGetMyOwnDetailsTool() Tool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{}, []string{})
+	schema := SimpleSchema("Get the details of the authenticated user.", map[string]*jsonschema.Schema{}, []string{})
 
 	return NewGenericTool("get_my_own_details", "Get the details of the authenticated user.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {

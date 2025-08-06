@@ -2,33 +2,34 @@ package tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/config"
+	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
 // ToolBase provides common functionality for all tools
 // implementing DRY principle by eliminating repetitive code
 type ToolBase struct {
-	name           string
-	description    string
-	schema         *jsonschema.Schema
-	client         webex.HTTPClient
-	configProvider config.Provider
+	name        string
+	description string
+	schema      *jsonschema.Schema
+	client      webex.HTTPClient
+	config      *config.Config
 }
 
 // NewToolBase creates a base tool with common functionality
 func NewToolBase(name, description string, schema *jsonschema.Schema) ToolBase {
-	return NewToolBaseWithConfig(name, description, schema, config.NewDefaultProvider())
+	cfg, _ := config.Load()
+	return NewToolBaseWithConfig(name, description, schema, cfg)
 }
 
 // NewToolBaseWithConfig creates a base tool with dependency injection
-func NewToolBaseWithConfig(name, description string, schema *jsonschema.Schema, configProvider config.Provider) ToolBase {
+func NewToolBaseWithConfig(name, description string, schema *jsonschema.Schema, cfg *config.Config) ToolBase {
 	// Initialize the client lazily - it will be set when first used
 	return ToolBase{
-		name:           name,
-		description:    description,
-		schema:         schema,
-		configProvider: configProvider,
+		name:        name,
+		description: description,
+		schema:      schema,
+		config:      cfg,
 	}
 }
 
@@ -36,8 +37,8 @@ func NewToolBaseWithConfig(name, description string, schema *jsonschema.Schema, 
 func (t *ToolBase) ensureClient() error {
 	if t.client == nil {
 		var err error
-		if t.configProvider != nil {
-			t.client, err = webex.NewClientWithConfig(t.configProvider)
+		if t.config != nil {
+			t.client, err = webex.NewClientWithConfig(t.config)
 		} else {
 			t.client, err = getDefaultClient()
 		}
@@ -60,11 +61,12 @@ func (t *ToolBase) GetInputSchema() interface{} { return t.schema }
 // Factory functions for creating schemas in a consistent way
 
 // SimpleSchema creates a simple schema with properties and required fields
-func SimpleSchema(properties map[string]*jsonschema.Schema, required []string) *jsonschema.Schema {
+func SimpleSchema(description string, properties map[string]*jsonschema.Schema, required []string) *jsonschema.Schema {
 	return &jsonschema.Schema{
-		Type:       "object",
-		Properties: properties,
-		Required:   required,
+		Type:        "object",
+		Description: description,
+		Properties:  properties,
+		Required:    required,
 	}
 }
 
@@ -102,9 +104,10 @@ func ArrayProperty(description string, items *jsonschema.Schema) *jsonschema.Sch
 }
 
 // ObjectProperty creates an object property schema
-func ObjectProperty(description string) *jsonschema.Schema {
+func ObjectProperty(description string, properties map[string]*jsonschema.Schema) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "object",
 		Description: description,
+		Properties:  properties,
 	}
 }

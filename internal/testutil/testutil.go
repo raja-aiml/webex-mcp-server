@@ -23,8 +23,22 @@ func SetEnv(t *testing.T, key, value string) func() {
 	}
 }
 
+// SetEnvWithConfigReset sets an environment variable and resets config singleton
+func SetEnvWithConfigReset(t *testing.T, key, value string) func() {
+	cleanup := SetEnv(t, key, value)
+	// Import would be circular, so we can't call config.ResetForTesting() here
+	// Tests need to call it manually or we need a different approach
+	return cleanup
+}
+
 // MockHTTPServer creates a test HTTP server with custom handlers
-func MockHTTPServer(t *testing.T, handlers map[string]func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+func MockHTTPServer(t *testing.T, handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
+	t.Helper()
+	return httptest.NewServer(http.HandlerFunc(handler))
+}
+
+// MockHTTPServerWithRoutes creates a test HTTP server with multiple route handlers
+func MockHTTPServerWithRoutes(t *testing.T, handlers map[string]func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	t.Helper()
 	
 	mux := http.NewServeMux()

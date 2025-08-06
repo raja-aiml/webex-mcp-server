@@ -9,8 +9,7 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
-	"github.com/valyala/fasthttp"
+	"github.com/raja-aiml/webex-mcp-server/internal/config"
 )
 
 // handleHTTPError processes HTTP error responses in a consistent way
@@ -22,57 +21,52 @@ func handleHTTPError(resp *http.Response, body []byte) error {
 	return fmt.Errorf("webex API error: %v", errorData)
 }
 
-// Client provides a single, configurable HTTP client
-// that can use either net/http or fasthttp based on configuration
+// Client provides a simple HTTP client for Webex API calls
 type Client struct {
-	useFastHTTP    bool
-	httpClient     *http.Client
-	fastClient     *fasthttp.Client
-	baseURL        string
-	headers        map[string]string
-	configProvider config.Provider
+	httpClient *http.Client
+	baseURL    string
+	headers    map[string]string
 }
 
-// NewClient creates a client with automatic backend selection
+// NewClient creates a client with configuration from environment
 func NewClient() (HTTPClient, error) {
-	return NewClientWithConfig(config.NewDefaultProvider())
-}
-
-// NewClientWithConfig creates a client with dependency injection
-func NewClientWithConfig(configProvider config.Provider) (HTTPClient, error) {
-	useFastHTTP := configProvider.GetUseFastHTTP()
-
-	baseURL, err := configProvider.GetWebexURL("")
+	cfg, err := config.Load()
 	if err != nil {
-		return nil, fmt.Errorf("failed to get base URL: %w", err)
+		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 
-	headers, err := configProvider.GetWebexHeaders()
+	headers, err := config.GetWebexHeaders()
 	if err != nil {
 		return nil, fmt.Errorf("failed to get headers: %w", err)
 	}
 
-	client := &Client{
-		useFastHTTP:    useFastHTTP,
-		baseURL:        baseURL,
-		headers:        headers,
-		configProvider: configProvider,
-	}
-
-	if useFastHTTP {
-		client.fastClient = &fasthttp.Client{
-			MaxConnsPerHost:     100,
-			MaxIdleConnDuration: 10 * time.Second,
-			ReadTimeout:         30 * time.Second,
-			WriteTimeout:        30 * time.Second,
-		}
-	} else {
-		client.httpClient = &http.Client{
+	return &Client{
+		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
-		}
+		},
+		baseURL: cfg.WebexAPIBaseURL,
+		headers: headers,
+	}, nil
+}
+
+// NewClientWithConfig creates a client with provided configuration
+func NewClientWithConfig(cfg *config.Config) (HTTPClient, error) {
+	if cfg == nil {
+		return nil, fmt.Errorf("config cannot be nil")
 	}
 
-	return client, nil
+	headers := map[string]string{
+		"Accept":        "application/json",
+		"Authorization": fmt.Sprintf("Bearer %s", cfg.WebexAPIKey),
+	}
+
+	return &Client{
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+		baseURL: cfg.WebexAPIBaseURL,
+		headers: headers,
+	}, nil
 }
 
 // Get performs a GET request
@@ -86,40 +80,40 @@ func (c *Client) Get(endpoint string, params map[string]string) (map[string]inte
 
 // Post performs a POST request
 func (c *Client) Post(endpoint string, data interface{}) (map[string]interface{}, error) {
-	fullURL, err := c.configProvider.GetWebexURL(endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get URL: %w", err)
-	}
+	fullURL := c.buildSimpleURL(endpoint)
 	return c.doRequest("POST", fullURL, data)
 }
 
 // Put performs a PUT request
 func (c *Client) Put(endpoint string, data interface{}) (map[string]interface{}, error) {
-	fullURL, err := c.configProvider.GetWebexURL(endpoint)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get URL: %w", err)
-	}
+	fullURL := c.buildSimpleURL(endpoint)
 	return c.doRequest("PUT", fullURL, data)
 }
 
 // Delete performs a DELETE request
 func (c *Client) Delete(endpoint string) error {
-	fullURL, err := c.configProvider.GetWebexURL(endpoint)
-	if err != nil {
-		return fmt.Errorf("failed to get URL: %w", err)
-	}
-	_, err = c.doRequest("DELETE", fullURL, nil)
+	fullURL := c.buildSimpleURL(endpoint)
+	_, err := c.doRequest("DELETE", fullURL, nil)
 	return err
+}
+
+// buildSimpleURL constructs URL without query parameters
+func (c *Client) buildSimpleURL(endpoint string) string {
+	if endpoint != "" && endpoint[0] != '/' {
+		endpoint = "/" + endpoint
+	}
+	return c.baseURL + endpoint
 }
 
 // buildURL constructs URL with query parameters
 func (c *Client) buildURL(endpoint string, params map[string]string) (string, error) {
-	fullURL, err := c.configProvider.GetWebexURL(endpoint)
-	if err != nil {
-		return "", fmt.Errorf("failed to get URL: %w", err)
-	}
+	fullURL := c.buildSimpleURL(endpoint)
+	
 	if len(params) > 0 {
-		u, _ := url.Parse(fullURL)
+		u, err := url.Parse(fullURL)
+		if err != nil {
+			return "", err
+		}
 		q := u.Query()
 		for key, value := range params {
 			if value != "" {
@@ -132,27 +126,15 @@ func (c *Client) buildURL(endpoint string, params map[string]string) (string, er
 	return fullURL, nil
 }
 
-// doRequest executes the HTTP request using the configured backend
+// doRequest executes the HTTP request
 func (c *Client) doRequest(method, url string, data interface{}) (map[string]interface{}, error) {
-	var body []byte
+	var reqBody io.Reader
+	
 	if data != nil {
-		var err error
-		body, err = json.Marshal(data)
+		body, err := json.Marshal(data)
 		if err != nil {
 			return nil, fmt.Errorf("failed to marshal request: %w", err)
 		}
-	}
-
-	if c.useFastHTTP {
-		return c.doFastHTTPRequest(method, url, body)
-	}
-	return c.doNetHTTPRequest(method, url, body)
-}
-
-// doNetHTTPRequest executes request using net/http
-func (c *Client) doNetHTTPRequest(method, url string, body []byte) (map[string]interface{}, error) {
-	var reqBody io.Reader
-	if body != nil {
 		reqBody = bytes.NewReader(body)
 	}
 
@@ -165,7 +147,7 @@ func (c *Client) doNetHTTPRequest(method, url string, body []byte) (map[string]i
 	for key, value := range c.headers {
 		req.Header.Set(key, value)
 	}
-	if body != nil {
+	if data != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
 
@@ -185,40 +167,12 @@ func (c *Client) doNetHTTPRequest(method, url string, body []byte) (map[string]i
 		return nil, err
 	}
 
-	return c.handleResponse(resp.StatusCode, respBody)
-}
-
-// doFastHTTPRequest executes request using fasthttp
-func (c *Client) doFastHTTPRequest(method, url string, body []byte) (map[string]interface{}, error) {
-	req := fasthttp.AcquireRequest()
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseRequest(req)
-	defer fasthttp.ReleaseResponse(resp)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod(method)
-
-	// Set headers
-	for key, value := range c.headers {
-		req.Header.Set(key, value)
-	}
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-		req.SetBody(body)
-	}
-
-	if err := c.fastClient.Do(req, resp); err != nil {
-		return nil, err
-	}
-
-	return c.handleResponse(resp.StatusCode(), resp.Body())
+	return c.handleResponse(resp, respBody)
 }
 
 // handleResponse processes the HTTP response
-func (c *Client) handleResponse(statusCode int, body []byte) (map[string]interface{}, error) {
-	if statusCode >= 400 {
-		// Create a mock response for handleHTTPError
-		resp := &http.Response{StatusCode: statusCode}
+func (c *Client) handleResponse(resp *http.Response, body []byte) (map[string]interface{}, error) {
+	if resp.StatusCode >= 400 {
 		return nil, handleHTTPError(resp, body)
 	}
 

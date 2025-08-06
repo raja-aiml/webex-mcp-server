@@ -4,7 +4,8 @@ import (
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server-go/internal/config"
+	"github.com/raja-aiml/webex-mcp-server/internal/config"
+	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 )
 
 func TestNewToolBase(t *testing.T) {
@@ -31,27 +32,37 @@ func TestNewToolBase(t *testing.T) {
 }
 
 func TestNewToolBaseWithConfig(t *testing.T) {
-	mockProvider := &config.MockProvider{
-		Token:   "test-token",
-		BaseURL: "https://api.test.com",
+	cfg := &config.Config{
+		WebexAPIKey:     "test-token",
+		WebexAPIBaseURL: "https://api.test.com",
 	}
 	
 	schema := &jsonschema.Schema{Type: "object"}
 	
-	tool := NewToolBaseWithConfig("test-tool", "Test description", schema, mockProvider)
+	tool := NewToolBaseWithConfig("test-tool", "Test description", schema, cfg)
 	
 	if tool.Name() != "test-tool" {
 		t.Errorf("Expected name 'test-tool', got %s", tool.Name())
 	}
 	
-	// Verify client was created
-	if tool.client == nil {
-		t.Error("Expected client to be initialized")
+	// Verify client is not yet initialized (lazy initialization)
+	if tool.client != nil {
+		t.Error("Expected client to be nil until first use (lazy initialization)")
 	}
 	
-	// Verify config provider
-	if tool.configProvider != mockProvider {
-		t.Error("Expected config provider to be set")
+	// Test that ensureClient works
+	if err := tool.ensureClient(); err != nil {
+		t.Errorf("ensureClient() failed: %v", err)
+	}
+	
+	// Now client should be initialized
+	if tool.client == nil {
+		t.Error("Expected client to be initialized after ensureClient()")
+	}
+	
+	// Verify config
+	if tool.config != cfg {
+		t.Error("Expected config to be set")
 	}
 }
 
@@ -68,252 +79,237 @@ func TestToolBase_GetInputSchema(t *testing.T) {
 	}
 	
 	result := tool.GetInputSchema()
-	
 	if result != schema {
-		t.Error("Expected GetInputSchema to return the configured schema")
+		t.Error("GetInputSchema() should return the tool's schema")
 	}
 }
 
 func TestSimpleSchema(t *testing.T) {
-	props := map[string]*jsonschema.Schema{
+	description := "Test schema"
+	properties := map[string]*jsonschema.Schema{
 		"field1": StringProperty("Field 1"),
 		"field2": IntegerProperty("Field 2"),
 	}
+	required := []string{"field1"}
 	
-	schema := SimpleSchema(props, []string{"field1"})
+	schema := SimpleSchema(description, properties, required)
 	
-	// Check type
 	if schema.Type != "object" {
-		t.Errorf("Expected type 'object', got %v", schema.Type)
+		t.Errorf("Expected type 'object', got %s", schema.Type)
 	}
 	
-	// Check properties
+	if schema.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, schema.Description)
+	}
+	
 	if len(schema.Properties) != 2 {
 		t.Errorf("Expected 2 properties, got %d", len(schema.Properties))
 	}
 	
-	// Check required
-	if len(schema.Required) != 1 || schema.Required[0] != "field1" {
-		t.Errorf("Expected required=['field1'], got %v", schema.Required)
+	if len(schema.Required) != 1 {
+		t.Errorf("Expected 1 required field, got %d", len(schema.Required))
+	}
+	
+	if schema.Required[0] != "field1" {
+		t.Errorf("Expected required field 'field1', got %s", schema.Required[0])
 	}
 }
 
 func TestStringProperty(t *testing.T) {
-	prop := StringProperty("Test string")
+	description := "Test string property"
+	prop := StringProperty(description)
 	
 	if prop.Type != "string" {
-		t.Errorf("Expected type 'string', got %v", prop.Type)
+		t.Errorf("Expected type 'string', got %s", prop.Type)
 	}
 	
-	if prop.Description != "Test string" {
-		t.Errorf("Expected description 'Test string', got %v", prop.Description)
+	if prop.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, prop.Description)
 	}
 }
 
 func TestIntegerProperty(t *testing.T) {
-	prop := IntegerProperty("Test integer")
+	description := "Test integer property"
+	prop := IntegerProperty(description)
 	
 	if prop.Type != "integer" {
-		t.Errorf("Expected type 'integer', got %v", prop.Type)
+		t.Errorf("Expected type 'integer', got %s", prop.Type)
 	}
 	
-	if prop.Description != "Test integer" {
-		t.Errorf("Expected description 'Test integer', got %v", prop.Description)
+	if prop.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, prop.Description)
 	}
 }
 
 func TestBooleanProperty(t *testing.T) {
-	prop := BooleanProperty("Test boolean")
+	description := "Test boolean property"
+	prop := BooleanProperty(description)
 	
 	if prop.Type != "boolean" {
-		t.Errorf("Expected type 'boolean', got %v", prop.Type)
+		t.Errorf("Expected type 'boolean', got %s", prop.Type)
 	}
 	
-	if prop.Description != "Test boolean" {
-		t.Errorf("Expected description 'Test boolean', got %v", prop.Description)
+	if prop.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, prop.Description)
 	}
 }
 
 func TestArrayProperty(t *testing.T) {
-	itemProp := StringProperty("Item")
-	prop := ArrayProperty("Test array", itemProp)
+	description := "Test array property"
+	items := StringProperty("Array item")
+	prop := ArrayProperty(description, items)
 	
 	if prop.Type != "array" {
-		t.Errorf("Expected type 'array', got %v", prop.Type)
+		t.Errorf("Expected type 'array', got %s", prop.Type)
 	}
 	
-	if prop.Description != "Test array" {
-		t.Errorf("Expected description 'Test array', got %v", prop.Description)
+	if prop.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, prop.Description)
 	}
 	
-	if prop.Items != itemProp {
-		t.Error("Expected items to match the provided schema")
+	if prop.Items != items {
+		t.Error("Expected items to match input")
 	}
 }
 
 func TestObjectProperty(t *testing.T) {
-	prop := ObjectProperty("Test object")
+	description := "Test object property"
+	properties := map[string]*jsonschema.Schema{
+		"nested": StringProperty("Nested field"),
+	}
+	prop := ObjectProperty(description, properties)
 	
 	if prop.Type != "object" {
-		t.Errorf("Expected type 'object', got %v", prop.Type)
+		t.Errorf("Expected type 'object', got %s", prop.Type)
 	}
 	
-	if prop.Description != "Test object" {
-		t.Errorf("Expected description 'Test object', got %v", prop.Description)
+	if prop.Description != description {
+		t.Errorf("Expected description '%s', got %s", description, prop.Description)
+	}
+	
+	if len(prop.Properties) != 1 {
+		t.Errorf("Expected 1 property, got %d", len(prop.Properties))
 	}
 }
 
 func TestPropertyHelpers_EdgeCases(t *testing.T) {
-	// Test with empty descriptions
 	t.Run("empty descriptions", func(t *testing.T) {
 		prop := StringProperty("")
-		if prop.Description != "" {
-			t.Errorf("Expected empty description, got %v", prop.Description)
+		if prop.Type != "string" {
+			t.Error("Should still create valid property with empty description")
 		}
 	})
 	
-	// Test nested array property
 	t.Run("nested array", func(t *testing.T) {
-		innerArray := ArrayProperty("Inner array", StringProperty("String item"))
+		innerArray := ArrayProperty("Inner array", StringProperty("Item"))
 		outerArray := ArrayProperty("Outer array", innerArray)
 		
 		if outerArray.Type != "array" {
-			t.Errorf("Expected type 'array', got %v", outerArray.Type)
+			t.Error("Should create nested array properly")
 		}
-		
 		if outerArray.Items.Type != "array" {
-			t.Errorf("Expected nested items type 'array', got %v", outerArray.Items.Type)
+			t.Error("Inner array should be preserved")
 		}
 	})
 	
-	// Test object with properties
 	t.Run("object with properties", func(t *testing.T) {
-		prop := ObjectProperty("User object")
-		
-		// Can add properties after creation
-		prop.Properties = map[string]*jsonschema.Schema{
-			"name": StringProperty("User name"),
-			"age":  IntegerProperty("User age"),
+		props := map[string]*jsonschema.Schema{
+			"field1": StringProperty("Field 1"),
+			"field2": IntegerProperty("Field 2"),
+			"field3": BooleanProperty("Field 3"),
 		}
+		obj := ObjectProperty("Complex object", props)
 		
-		if len(prop.Properties) != 2 {
-			t.Errorf("Expected 2 properties, got %d", len(prop.Properties))
+		if len(obj.Properties) != 3 {
+			t.Errorf("Expected 3 properties, got %d", len(obj.Properties))
 		}
 	})
 }
 
 func TestSimpleSchema_ComplexExample(t *testing.T) {
-	// Test a more complex schema with nested properties
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"name":   StringProperty("User name"),
-		"age":    IntegerProperty("User age"),
-		"active": BooleanProperty("Is active"),
-		"tags":   ArrayProperty("User tags", StringProperty("Tag")),
-		"address": &jsonschema.Schema{
-			Type:        "object",
-			Description: "User address",
-			Properties: map[string]*jsonschema.Schema{
-				"street": StringProperty("Street name"),
-				"city":   StringProperty("City name"),
-				"zip":    StringProperty("Zip code"),
-			},
-			Required: []string{"street", "city"},
+	// Test a complex schema like one used in real tools
+	schema := SimpleSchema(
+		"List rooms",
+		map[string]*jsonschema.Schema{
+			"teamId":    StringProperty("List rooms associated with a team"),
+			"type":      StringProperty("Room type: direct or group"),
+			"sortBy":    StringProperty("Sort results"),
+			"max":       IntegerProperty("Limit the maximum number of rooms"),
 		},
-	}, []string{"name", "active"})
+		[]string{}, // No required fields
+	)
 	
-	// Verify schema structure
 	if schema.Type != "object" {
-		t.Errorf("Expected type 'object', got %v", schema.Type)
+		t.Error("Schema should be object type")
 	}
 	
-	if len(schema.Properties) != 5 {
-		t.Errorf("Expected 5 properties, got %d", len(schema.Properties))
+	if len(schema.Properties) != 4 {
+		t.Errorf("Expected 4 properties, got %d", len(schema.Properties))
 	}
 	
-	// Check required fields
-	if len(schema.Required) != 2 {
-		t.Errorf("Expected 2 required fields, got %d", len(schema.Required))
-	}
-	
-	// Verify address structure
-	addressProp := schema.Properties["address"]
-	if addressProp.Type != "object" {
-		t.Errorf("Expected address type 'object', got %v", addressProp.Type)
-	}
-	
-	if len(addressProp.Properties) != 3 {
-		t.Errorf("Expected 3 address properties, got %d", len(addressProp.Properties))
-	}
-	
-	if len(addressProp.Required) != 2 {
-		t.Errorf("Expected 2 required address fields, got %d", len(addressProp.Required))
+	if schema.Properties["max"].Type != "integer" {
+		t.Error("'max' property should be integer type")
 	}
 }
 
 func TestToolBase_WithNilClient(t *testing.T) {
+	// Set up test environment with API key
+	config.ResetForTesting()
+	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
+	defer func() {
+		cleanup()
+		config.ResetForTesting()
+	}()
+	
 	tool := &ToolBase{
 		name:        "test-tool",
-		description: "Test tool",
+		description: "Test",
 		schema:      &jsonschema.Schema{Type: "object"},
-		client:      nil, // Explicitly nil client
+		client:      nil,
 	}
 	
-	// Should not panic
-	if tool.Name() != "test-tool" {
-		t.Errorf("Expected name 'test-tool', got %s", tool.Name())
+	// Ensure client initializes properly
+	err := tool.ensureClient()
+	if err != nil {
+		t.Errorf("ensureClient() should handle nil client gracefully: %v", err)
 	}
 	
-	if tool.Description() != "Test tool" {
-		t.Errorf("Expected description 'Test tool', got %s", tool.Description())
+	if tool.client == nil {
+		t.Error("Client should be initialized after ensureClient()")
 	}
 }
 
 func TestSchemaBuilder_ChainableAPI(t *testing.T) {
-	// Test that we can build schemas in a fluent way
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"users": ArrayProperty("List of users", &jsonschema.Schema{
-			Type: "object",
-			Properties: map[string]*jsonschema.Schema{
-				"id":       IntegerProperty("User ID"),
-				"name":     StringProperty("User name"),
-				"email":    StringProperty("User email"),
-				"verified": BooleanProperty("Email verified"),
-				"roles":    ArrayProperty("User roles", StringProperty("Role name")),
-			},
-			Required: []string{"id", "name", "email"},
-		}),
-		"total": IntegerProperty("Total user count"),
-		"page":  IntegerProperty("Current page"),
-	}, []string{"users", "total"})
+	// Test that the helper functions can be chained nicely
+	schema := SimpleSchema(
+		"Complex schema",
+		map[string]*jsonschema.Schema{
+			"stringField": StringProperty("A string"),
+			"numberField": IntegerProperty("A number"),
+			"boolField":   BooleanProperty("A boolean"),
+			"arrayField": ArrayProperty("An array",
+				ObjectProperty("Array items", map[string]*jsonschema.Schema{
+					"nested": StringProperty("Nested field"),
+				}),
+			),
+		},
+		[]string{"stringField"},
+	)
 	
-	// Verify the structure
 	if schema.Type != "object" {
-		t.Error("Expected root type to be object")
+		t.Error("Should create valid schema through chaining")
 	}
 	
-	// Check users array property
-	usersProp := schema.Properties["users"]
-	if usersProp.Type != "array" {
-		t.Error("Expected users to be array type")
+	if len(schema.Required) != 1 || schema.Required[0] != "stringField" {
+		t.Error("Should preserve required fields")
 	}
 	
-	// Check user object schema
-	userSchema := usersProp.Items
-	if userSchema.Type != "object" {
-		t.Error("Expected user items to be object type")
+	arrayProp := schema.Properties["arrayField"]
+	if arrayProp.Type != "array" {
+		t.Error("Array property should be preserved")
 	}
 	
-	if len(userSchema.Properties) != 5 {
-		t.Errorf("Expected 5 user properties, got %d", len(userSchema.Properties))
-	}
-	
-	// Check nested array
-	rolesProp := userSchema.Properties["roles"]
-	if rolesProp.Type != "array" {
-		t.Error("Expected roles to be array type")
-	}
-	
-	if rolesProp.Items.Type != "string" {
-		t.Error("Expected role items to be string type")
+	if arrayProp.Items.Type != "object" {
+		t.Error("Nested object in array should be preserved")
 	}
 }

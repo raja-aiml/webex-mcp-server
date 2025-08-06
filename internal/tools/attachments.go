@@ -16,7 +16,7 @@ func NewCreateAttachmentActionTool() Tool {
 	properties := map[string]*jsonschema.Schema{
 		"type":      StringProperty("The type of action."),
 		"messageId": StringProperty("The ID of the message with attachment."),
-		"inputs":    ObjectProperty("The attachment action's inputs."),
+		"inputs":    ObjectProperty("The attachment action's inputs.", map[string]*jsonschema.Schema{}),
 	}
 
 	return NewCreateTool[CreateAttachmentActionParams](

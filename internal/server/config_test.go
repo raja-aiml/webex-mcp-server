@@ -4,7 +4,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raja-aiml/webex-mcp-server-go/internal/testutil"
+	"github.com/raja-aiml/webex-mcp-server/internal/config"
+	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 )
 
 func TestInitializeConfig(t *testing.T) {
@@ -31,6 +32,8 @@ func TestInitializeConfig(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			config.ResetForTesting()
+			
 			// Save original env
 			origKey := os.Getenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 			defer func() {
@@ -39,6 +42,7 @@ func TestInitializeConfig(t *testing.T) {
 				} else {
 					os.Unsetenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 				}
+				config.ResetForTesting()
 			}()
 
 			tt.setup()
@@ -52,6 +56,9 @@ func TestInitializeConfig(t *testing.T) {
 }
 
 func TestInitializeConfig_LoadsEnvFile(t *testing.T) {
+	config.ResetForTesting()
+	defer config.ResetForTesting()
+	
 	// Create a temporary .env file
 	envContent := []byte("TEST_ENV_VAR=test_value\n")
 	if err := os.WriteFile(".env", envContent, 0644); err != nil {

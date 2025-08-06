@@ -19,6 +19,14 @@ var (
 	loadErr  error
 )
 
+// ResetForTesting resets the singleton state for testing purposes
+// This function should only be used in tests
+func ResetForTesting() {
+	once = sync.Once{}
+	instance = nil
+	loadErr = nil
+}
+
 // Load loads the configuration from environment variables
 // It uses a singleton pattern to ensure config is loaded only once
 func Load() (*Config, error) {
@@ -57,25 +65,29 @@ func Validate() error {
 	return err
 }
 
-func GetWebexHeaders() (map[string]string, error) {
+// GetWebexHeaders returns headers for Webex API requests
+// contentType is optional - if provided, it sets the Content-Type header
+func GetWebexHeaders(contentType ...string) (map[string]string, error) {
 	cfg, err := Load()
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 	
-	return map[string]string{
+	headers := map[string]string{
 		"Accept":        "application/json",
 		"Authorization": fmt.Sprintf("Bearer %s", cfg.WebexAPIKey),
-	}, nil
+	}
+	
+	if len(contentType) > 0 && contentType[0] != "" {
+		headers["Content-Type"] = contentType[0]
+	}
+	
+	return headers, nil
 }
 
+// GetWebexJSONHeaders is a convenience function for JSON requests
 func GetWebexJSONHeaders() (map[string]string, error) {
-	headers, err := GetWebexHeaders()
-	if err != nil {
-		return nil, err
-	}
-	headers["Content-Type"] = "application/json"
-	return headers, nil
+	return GetWebexHeaders("application/json")
 }
 
 func GetWebexURL(endpoint string) (string, error) {
@@ -113,6 +125,3 @@ func GetWebexBaseURL() (string, error) {
 	return cfg.WebexAPIBaseURL, nil
 }
 
-func GetUseFastHTTP() bool {
-	return os.Getenv("USE_FASTHTTP") != "false"
-}

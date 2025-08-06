@@ -4,7 +4,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/raja-aiml/webex-mcp-server-go/internal/testutil"
+	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 )
 
 func TestValidate(t *testing.T) {
@@ -38,6 +38,9 @@ func TestValidate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Reset singleton state for isolated testing
+			ResetForTesting()
+			
 			// Save original env
 			origKey := os.Getenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 			defer func() {
@@ -46,6 +49,7 @@ func TestValidate(t *testing.T) {
 				} else {
 					os.Unsetenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 				}
+				ResetForTesting() // Reset again after test
 			}()
 
 			tt.setup()
@@ -87,8 +91,12 @@ func TestGetWebexToken(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ResetForTesting()
 			cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", tt.envValue)
-			defer cleanup()
+			defer func() {
+				cleanup()
+				ResetForTesting()
+			}()
 
 			got, _ := GetWebexToken()
 			if got != tt.want {
@@ -133,8 +141,14 @@ func TestGetWebexURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
-			defer cleanup()
+			ResetForTesting()
+			cleanup1 := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token") // Required for config Load()
+			cleanup2 := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
+			defer func() {
+				cleanup1()
+				cleanup2()
+				ResetForTesting()
+			}()
 
 			got, _ := GetWebexURL(tt.endpoint)
 			if got != tt.want {
@@ -145,8 +159,12 @@ func TestGetWebexURL(t *testing.T) {
 }
 
 func TestGetWebexHeaders(t *testing.T) {
+	ResetForTesting()
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
-	defer cleanup()
+	defer func() {
+		cleanup()
+		ResetForTesting()
+	}()
 
 	headers, _ := GetWebexHeaders()
 
@@ -207,6 +225,7 @@ func TestLoad(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			ResetForTesting()
 			// Save original env
 			origKey := os.Getenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 			origURL := os.Getenv("WEBEX_API_BASE_URL")
@@ -215,6 +234,7 @@ func TestLoad(t *testing.T) {
 				os.Setenv("WEBEX_PUBLIC_WORKSPACE_API_KEY", origKey)
 				os.Setenv("WEBEX_API_BASE_URL", origURL)
 				os.Setenv("PORT", origPort)
+				ResetForTesting()
 			}()
 
 			tt.setup()
@@ -239,8 +259,12 @@ func TestLoad(t *testing.T) {
 }
 
 func TestGetWebexJSONHeaders(t *testing.T) {
+	ResetForTesting()
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token")
-	defer cleanup()
+	defer func() {
+		cleanup()
+		ResetForTesting()
+	}()
 
 	headers, _ := GetWebexJSONHeaders()
 
@@ -279,8 +303,14 @@ func TestGetWebexBaseURL(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			cleanup := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
-			defer cleanup()
+			ResetForTesting()
+			cleanup1 := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-token") // Required for config Load()
+			cleanup2 := testutil.SetEnv(t, "WEBEX_API_BASE_URL", tt.envValue)
+			defer func() {
+				cleanup1()
+				cleanup2()
+				ResetForTesting()
+			}()
 
 			got, _ := GetWebexBaseURL()
 			if got != tt.want {
@@ -290,41 +320,3 @@ func TestGetWebexBaseURL(t *testing.T) {
 	}
 }
 
-func TestGetUseFastHTTP(t *testing.T) {
-	tests := []struct {
-		name     string
-		envValue string
-		want     bool
-	}{
-		{
-			name:     "returns true when not set (default)",
-			envValue: "",
-			want:     true,
-		},
-		{
-			name:     "returns false when set to false",
-			envValue: "false",
-			want:     false,
-		},
-		{
-			name:     "returns true for any non-false value",
-			envValue: "true",
-			want:     true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.envValue == "" {
-				os.Unsetenv("USE_FASTHTTP")
-			} else {
-				cleanup := testutil.SetEnv(t, "USE_FASTHTTP", tt.envValue)
-				defer cleanup()
-			}
-
-			if got := GetUseFastHTTP(); got != tt.want {
-				t.Errorf("GetUseFastHTTP() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
