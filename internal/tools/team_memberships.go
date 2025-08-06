@@ -1,209 +1,97 @@
 package tools
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
-
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
 )
 
-// Team Membership Tools - CRUD operations for team memberships
-
-// ListTeamMembershipsTool lists team memberships
-type ListTeamMembershipsTool struct {
-	ToolBase
+// ListTeamMembershipsParams defines the parameters for listing team memberships
+type ListTeamMembershipsParams struct {
+	TeamId string `json:"teamId" required:"true"`
+	Max    int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
-func NewListTeamMembershipsTool() *ListTeamMembershipsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"teamId": StringProperty("List memberships for a team, by team ID."),
+// CreateTeamMembershipParams defines the parameters for creating a team membership
+type CreateTeamMembershipParams struct {
+	TeamId      string `json:"teamId" required:"true"`
+	PersonId    string `json:"personId,omitempty"`
+	PersonEmail string `json:"personEmail,omitempty"`
+	IsModerator bool   `json:"isModerator,omitempty"`
+}
+
+// UpdateTeamMembershipParams defines the parameters for updating a team membership
+type UpdateTeamMembershipParams struct {
+	MembershipId string `json:"membershipId" required:"true"`
+	IsModerator  bool   `json:"isModerator,omitempty"`
+}
+
+// NewListTeamMembershipsTool lists team memberships
+func NewListTeamMembershipsTool() Tool {
+	properties := map[string]*jsonschema.Schema{
+		"teamId": StringProperty("List memberships for a team, by ID."),
 		"max":    IntegerProperty("Limit the maximum number of team memberships."),
-	}, []string{"teamId"})
-
-	return &ListTeamMembershipsTool{
-		ToolBase: NewToolBase("list_team_memberships", "List team memberships", schema),
 	}
+
+	return NewListTool[ListTeamMembershipsParams](
+		"list_team_memberships",
+		"List team memberships for a team.",
+		"/team/memberships",
+		properties,
+	)
 }
 
-func (t *ListTeamMembershipsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		TeamId string `json:"teamId"`
-		Max    int    `json:"max,omitempty"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.TeamId == "" {
-		return nil, fmt.Errorf("teamId is required")
-	}
-
-	queryParams := map[string]string{"teamId": params.TeamId}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	}
-
-	return t.client.Get("/team/memberships", queryParams)
-}
-
-func (t *ListTeamMembershipsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// CreateTeamMembershipTool adds someone to a team
-type CreateTeamMembershipTool struct {
-	ToolBase
-}
-
-func NewCreateTeamMembershipTool() *CreateTeamMembershipTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// NewCreateTeamMembershipTool creates a new team membership
+func NewCreateTeamMembershipTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"teamId":      StringProperty("The team ID."),
 		"personId":    StringProperty("The person ID."),
 		"personEmail": StringProperty("The email address of the person."),
 		"isModerator": BooleanProperty("Whether the person is a team moderator."),
-	}, []string{"teamId"})
-
-	return &CreateTeamMembershipTool{
-		ToolBase: NewToolBase("create_a_team_membership", "Add someone to a team", schema),
-	}
-}
-
-func (t *CreateTeamMembershipTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	if params["teamId"] == nil || params["teamId"] == "" {
-		return nil, fmt.Errorf("teamId is required")
-	}
-
-	// Validate that either personId or personEmail is provided
-	if params["personId"] == nil && params["personEmail"] == nil {
-		return nil, fmt.Errorf("either personId or personEmail is required")
-	}
-
-	return t.client.Post("/team/memberships", params)
+	return NewCreateTool[CreateTeamMembershipParams](
+		"create_a_team_membership",
+		"Add someone to a team by Person ID or email address.",
+		"/team/memberships",
+		properties,
+		[]string{"teamId"},
+	)
 }
 
-func (t *CreateTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewGetTeamMembershipDetailsTool gets team membership details
+func NewGetTeamMembershipDetailsTool() Tool {
+	return NewGetTool(
+		"get_team_membership_details",
+		"Get details for a team membership by ID.",
+		"/team/memberships",
+		"membershipId",
+		"The unique identifier for the team membership.",
+	)
 }
 
-// GetTeamMembershipDetailsTool gets team membership details
-type GetTeamMembershipDetailsTool struct {
-	ToolBase
-}
-
-func NewGetTeamMembershipDetailsTool() *GetTeamMembershipDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"membershipId": StringProperty("The unique identifier for the team membership."),
-	}, []string{"membershipId"})
-
-	return &GetTeamMembershipDetailsTool{
-		ToolBase: NewToolBase("get_team_membership_details", "Get team membership details", schema),
-	}
-}
-
-func (t *GetTeamMembershipDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		MembershipId string `json:"membershipId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.MembershipId == "" {
-		return nil, fmt.Errorf("membershipId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/team/memberships/%s", params.MembershipId), nil)
-}
-
-func (t *GetTeamMembershipDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// UpdateTeamMembershipTool updates a team membership
-type UpdateTeamMembershipTool struct {
-	ToolBase
-}
-
-func NewUpdateTeamMembershipTool() *UpdateTeamMembershipTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// NewUpdateTeamMembershipTool updates a team membership
+func NewUpdateTeamMembershipTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"membershipId": StringProperty("The unique identifier for the team membership."),
 		"isModerator":  BooleanProperty("Whether the person is a team moderator."),
-	}, []string{"membershipId"})
-
-	return &UpdateTeamMembershipTool{
-		ToolBase: NewToolBase("update_a_team_membership", "Update a team membership", schema),
 	}
+
+	return NewUpdateTool[UpdateTeamMembershipParams](
+		"update_a_team_membership",
+		"Update a team membership by ID.",
+		"/team/memberships",
+		"membershipId",
+		properties,
+		[]string{"membershipId"},
+	)
 }
 
-func (t *UpdateTeamMembershipTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	membershipId, ok := params["membershipId"].(string)
-	if !ok || membershipId == "" {
-		return nil, fmt.Errorf("membershipId is required")
-	}
-
-	// Remove membershipId from params as it's in the URL
-	delete(params, "membershipId")
-
-	// At least one field to update must be specified
-	if len(params) == 0 {
-		return nil, fmt.Errorf("at least one field to update must be specified")
-	}
-
-	return t.client.Put(fmt.Sprintf("/team/memberships/%s", membershipId), params)
-}
-
-func (t *UpdateTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// DeleteTeamMembershipTool removes someone from a team
-type DeleteTeamMembershipTool struct {
-	ToolBase
-}
-
-func NewDeleteTeamMembershipTool() *DeleteTeamMembershipTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"membershipId": StringProperty("The unique identifier for the team membership."),
-	}, []string{"membershipId"})
-
-	return &DeleteTeamMembershipTool{
-		ToolBase: NewToolBase("delete_a_team_membership", "Delete a team membership", schema),
-	}
-}
-
-func (t *DeleteTeamMembershipTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		MembershipId string `json:"membershipId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.MembershipId == "" {
-		return nil, fmt.Errorf("membershipId is required")
-	}
-
-	if err := t.client.Delete(fmt.Sprintf("/team/memberships/%s", params.MembershipId)); err != nil {
-		return nil, err
-	}
-
-	return map[string]interface{}{"success": true, "message": "Team membership deleted"}, nil
-}
-
-func (t *DeleteTeamMembershipTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewDeleteTeamMembershipTool deletes a team membership
+func NewDeleteTeamMembershipTool() Tool {
+	return NewDeleteTool(
+		"delete_a_team_membership",
+		"Delete a team membership by ID.",
+		"/team/memberships",
+		"membershipId",
+		"The unique identifier for the team membership.",
+	)
 }

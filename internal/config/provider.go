@@ -2,11 +2,11 @@ package config
 
 // Provider defines the interface for configuration access
 type Provider interface {
-	GetWebexURL(endpoint string) string
-	GetWebexHeaders() map[string]string
-	GetWebexJSONHeaders() map[string]string
-	GetWebexToken() string
-	GetWebexBaseURL() string
+	GetWebexURL(endpoint string) (string, error)
+	GetWebexHeaders() (map[string]string, error)
+	GetWebexJSONHeaders() (map[string]string, error)
+	GetWebexToken() (string, error)
+	GetWebexBaseURL() (string, error)
 	GetUseFastHTTP() bool
 }
 
@@ -17,23 +17,23 @@ func NewDefaultProvider() Provider {
 	return &DefaultProvider{}
 }
 
-func (p *DefaultProvider) GetWebexURL(endpoint string) string {
+func (p *DefaultProvider) GetWebexURL(endpoint string) (string, error) {
 	return GetWebexURL(endpoint)
 }
 
-func (p *DefaultProvider) GetWebexHeaders() map[string]string {
+func (p *DefaultProvider) GetWebexHeaders() (map[string]string, error) {
 	return GetWebexHeaders()
 }
 
-func (p *DefaultProvider) GetWebexJSONHeaders() map[string]string {
+func (p *DefaultProvider) GetWebexJSONHeaders() (map[string]string, error) {
 	return GetWebexJSONHeaders()
 }
 
-func (p *DefaultProvider) GetWebexToken() string {
+func (p *DefaultProvider) GetWebexToken() (string, error) {
 	return GetWebexToken()
 }
 
-func (p *DefaultProvider) GetWebexBaseURL() string {
+func (p *DefaultProvider) GetWebexBaseURL() (string, error) {
 	return GetWebexBaseURL()
 }
 

@@ -1,71 +1,64 @@
 package tools
 
 import (
-	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
-// ListRoomsTool lists Webex rooms
-type ListRoomsTool struct {
-	ToolBase
+// ListRoomsParams defines the parameters for listing rooms
+type ListRoomsParams struct {
+	TeamId string `json:"teamId,omitempty" query:"teamId"`
+	Type   string `json:"type,omitempty" query:"type"`
+	SortBy string `json:"sortBy,omitempty" query:"sortBy"`
+	Max    int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
-func NewListRoomsTool() *ListRoomsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// CreateRoomParams defines the parameters for creating a room
+type CreateRoomParams struct {
+	Title              string `json:"title" required:"true"`
+	TeamId             string `json:"teamId,omitempty"`
+	ClassificationId   string `json:"classificationId,omitempty"`
+	IsLocked           bool   `json:"isLocked,omitempty"`
+	IsPublic           bool   `json:"isPublic,omitempty"`
+	Description        string `json:"description,omitempty"`
+	IsAnnouncementOnly bool   `json:"isAnnouncementOnly,omitempty"`
+}
+
+// UpdateRoomParams defines the parameters for updating a room
+type UpdateRoomParams struct {
+	RoomId             string `json:"roomId" required:"true"`
+	Title              string `json:"title,omitempty"`
+	ClassificationId   string `json:"classificationId,omitempty"`
+	TeamId             string `json:"teamId,omitempty"`
+	IsLocked           bool   `json:"isLocked,omitempty"`
+	IsPublic           bool   `json:"isPublic,omitempty"`
+	Description        string `json:"description,omitempty"`
+	IsAnnouncementOnly bool   `json:"isAnnouncementOnly,omitempty"`
+	IsReadOnly         bool   `json:"isReadOnly,omitempty"`
+}
+
+// NewListRoomsTool lists Webex rooms
+func NewListRoomsTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"teamId": StringProperty("List rooms associated with a team, by ID."),
 		"type":   StringProperty("List rooms by type: 'direct' or 'group'."),
 		"sortBy": StringProperty("Sort results by: 'id', 'lastactivity', or 'created'."),
 		"max":    IntegerProperty("Limit the maximum number of rooms in the response."),
-	}, []string{})
-
-	return &ListRoomsTool{
-		ToolBase: NewToolBase("list_rooms", "List Webex rooms.", schema),
 	}
+
+	return NewListTool[ListRoomsParams](
+		"list_rooms",
+		"List Webex rooms.",
+		"/rooms",
+		properties,
+	)
 }
 
-func (t *ListRoomsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		TeamId string `json:"teamId,omitempty"`
-		Type   string `json:"type,omitempty"`
-		SortBy string `json:"sortBy,omitempty"`
-		Max    int    `json:"max,omitempty"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	queryParams := map[string]string{}
-	if params.TeamId != "" {
-		queryParams["teamId"] = params.TeamId
-	}
-	if params.Type != "" {
-		queryParams["type"] = params.Type
-	}
-	if params.SortBy != "" {
-		queryParams["sortBy"] = params.SortBy
-	}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	}
-
-	return t.client.Get("/rooms", queryParams)
-}
-
-func (t *ListRoomsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// CreateRoomTool creates a new Webex room
-type CreateRoomTool struct {
-	ToolBase
-}
-
-func NewCreateRoomTool() *CreateRoomTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// NewCreateRoomTool creates a new Webex room
+func NewCreateRoomTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"title":              StringProperty("A user-friendly name for the room."),
 		"teamId":             StringProperty("The ID for the team with which this room is associated."),
 		"classificationId":   StringProperty("The classification ID for the room."),
@@ -73,72 +66,31 @@ func NewCreateRoomTool() *CreateRoomTool {
 		"isPublic":           BooleanProperty("Whether the room is public (allows guest users)."),
 		"description":        StringProperty("The description of the room."),
 		"isAnnouncementOnly": BooleanProperty("Whether the room is announcement only."),
-	}, []string{"title"})
-
-	return &CreateRoomTool{
-		ToolBase: NewToolBase("create_a_room", "Create a new Webex room.", schema),
-	}
-}
-
-func (t *CreateRoomTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	if params["title"] == nil || params["title"] == "" {
-		return nil, fmt.Errorf("title is required")
-	}
-
-	return t.client.Post("/rooms", params)
+	return NewCreateTool[CreateRoomParams](
+		"create_a_room",
+		"Create a new Webex room.",
+		"/rooms",
+		properties,
+		[]string{"title"},
+	)
 }
 
-func (t *CreateRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewGetRoomDetailsTool gets details of a specific room
+func NewGetRoomDetailsTool() Tool {
+	return NewGetTool(
+		"get_room_details",
+		"Get details of a specific room.",
+		"/rooms",
+		"roomId",
+		"The unique identifier for the room.",
+	)
 }
 
-// GetRoomDetailsTool gets details of a specific room
-type GetRoomDetailsTool struct {
-	ToolBase
-}
-
-func NewGetRoomDetailsTool() *GetRoomDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId": StringProperty("The unique identifier for the room."),
-	}, []string{"roomId"})
-
-	return &GetRoomDetailsTool{
-		ToolBase: NewToolBase("get_room_details", "Get details of a specific room.", schema),
-	}
-}
-
-func (t *GetRoomDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		RoomId string `json:"roomId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.RoomId == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/rooms/%s", params.RoomId), nil)
-}
-
-func (t *GetRoomDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// UpdateRoomTool updates a room
-type UpdateRoomTool struct {
-	ToolBase
-}
-
-func NewUpdateRoomTool() *UpdateRoomTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// NewUpdateRoomTool updates a room
+func NewUpdateRoomTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"roomId":             StringProperty("The unique identifier for the room."),
 		"title":              StringProperty("A user-friendly name for the room."),
 		"classificationId":   StringProperty("The classification ID for the room."),
@@ -148,110 +100,41 @@ func NewUpdateRoomTool() *UpdateRoomTool {
 		"description":        StringProperty("The description of the room."),
 		"isAnnouncementOnly": BooleanProperty("Whether the room is announcement only."),
 		"isReadOnly":         BooleanProperty("Whether the room is read only."),
-	}, []string{"roomId"})
-
-	return &UpdateRoomTool{
-		ToolBase: NewToolBase("update_a_room", "Update a room.", schema),
-	}
-}
-
-func (t *UpdateRoomTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	roomId, ok := params["roomId"].(string)
-	if !ok || roomId == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	// Remove roomId from params as it's in the URL
-	delete(params, "roomId")
-
-	// At least one field to update must be specified
-	if len(params) == 0 {
-		return nil, fmt.Errorf("at least one field to update must be specified")
-	}
-
-	return t.client.Put(fmt.Sprintf("/rooms/%s", roomId), params)
+	return NewUpdateTool[UpdateRoomParams](
+		"update_a_room",
+		"Update a room.",
+		"/rooms",
+		"roomId",
+		properties,
+		[]string{"roomId"},
+	)
 }
 
-func (t *UpdateRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewDeleteRoomTool deletes a room
+func NewDeleteRoomTool() Tool {
+	return NewDeleteTool(
+		"delete_a_room",
+		"Delete a room.",
+		"/rooms",
+		"roomId",
+		"The unique identifier for the room.",
+	)
 }
 
-// DeleteRoomTool deletes a room
-type DeleteRoomTool struct {
-	ToolBase
-}
-
-func NewDeleteRoomTool() *DeleteRoomTool {
+// NewGetRoomMeetingDetailsTool gets meeting details for a room
+func NewGetRoomMeetingDetailsTool() Tool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
 		"roomId": StringProperty("The unique identifier for the room."),
 	}, []string{"roomId"})
 
-	return &DeleteRoomTool{
-		ToolBase: NewToolBase("delete_a_room", "Delete a room.", schema),
-	}
-}
-
-func (t *DeleteRoomTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		RoomId string `json:"roomId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.RoomId == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	err := t.client.Delete(fmt.Sprintf("/rooms/%s", params.RoomId))
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]interface{}{"success": true}, nil
-}
-
-func (t *DeleteRoomTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// GetRoomMeetingDetailsTool gets meeting details for a room
-type GetRoomMeetingDetailsTool struct {
-	ToolBase
-}
-
-func NewGetRoomMeetingDetailsTool() *GetRoomMeetingDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId": StringProperty("The unique identifier for the room."),
-	}, []string{"roomId"})
-
-	return &GetRoomMeetingDetailsTool{
-		ToolBase: NewToolBase("get_room_meeting_details", "Get meeting details for a room.", schema),
-	}
-}
-
-func (t *GetRoomMeetingDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		RoomId string `json:"roomId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.RoomId == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/rooms/%s/meetingInfo", params.RoomId), nil)
-}
-
-func (t *GetRoomMeetingDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+	return NewGenericTool("get_room_meeting_details", "Get meeting details for a room.", schema,
+		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+			roomId, ok := (*params)["roomId"].(string)
+			if !ok || roomId == "" {
+				return nil, fmt.Errorf("roomId is required")
+			}
+			return client.Get(fmt.Sprintf("/rooms/%s/meetingInfo", roomId), nil)
+		})
 }

@@ -12,6 +12,8 @@
 *.test
 *.out
 coverage.out
+coverage.html
+*.coverprofile
 
 # Dependency directories
 /vendor/

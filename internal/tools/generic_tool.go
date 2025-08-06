@@ -36,6 +36,9 @@ func (t *GenericTool[T]) Execute(args json.RawMessage) (interface{}, error) {
 		return nil, err
 	}
 
+	if err := t.ensureClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize client: %w", err)
+	}
 	return t.executor(&params, t.client)
 }
 
@@ -156,13 +159,17 @@ func NewListTool[T any](name, description, endpoint string, properties map[strin
 }
 
 // NewGetTool creates a generic get-by-id tool
-func NewGetTool(name, description, endpoint, idField string) *GenericTool[IDParams] {
+func NewGetTool(name, description, endpoint, idField, idDescription string) Tool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		idField: StringProperty("The ID of the " + idField),
+		idField: StringProperty(idDescription),
 	}, []string{idField})
 
-	return NewGenericTool(name, description, schema, func(params *IDParams, client webex.HTTPClient) (interface{}, error) {
-		return client.Get(fmt.Sprintf("%s/%s", endpoint, params.ID), nil)
+	return NewGenericTool(name, description, schema, func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+		id, ok := (*params)[idField].(string)
+		if !ok || id == "" {
+			return nil, fmt.Errorf("%s is required", idField)
+		}
+		return client.Get(fmt.Sprintf("%s/%s", endpoint, id), nil)
 	})
 }
 
@@ -212,13 +219,17 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 }
 
 // NewDeleteTool creates a generic delete tool
-func NewDeleteTool(name, description, endpoint, idField string) *GenericTool[IDParams] {
+func NewDeleteTool(name, description, endpoint, idField, idDescription string) Tool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		idField: StringProperty("The ID of the item to delete"),
+		idField: StringProperty(idDescription),
 	}, []string{idField})
 
-	return NewGenericTool(name, description, schema, func(params *IDParams, client webex.HTTPClient) (interface{}, error) {
-		err := client.Delete(fmt.Sprintf("%s/%s", endpoint, params.ID))
+	return NewGenericTool(name, description, schema, func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+		id, ok := (*params)[idField].(string)
+		if !ok || id == "" {
+			return nil, fmt.Errorf("%s is required", idField)
+		}
+		err := client.Delete(fmt.Sprintf("%s/%s", endpoint, id))
 		if err != nil {
 			return nil, err
 		}

@@ -34,18 +34,28 @@ type Client struct {
 }
 
 // NewClient creates a client with automatic backend selection
-func NewClient() HTTPClient {
+func NewClient() (HTTPClient, error) {
 	return NewClientWithConfig(config.NewDefaultProvider())
 }
 
 // NewClientWithConfig creates a client with dependency injection
-func NewClientWithConfig(configProvider config.Provider) HTTPClient {
+func NewClientWithConfig(configProvider config.Provider) (HTTPClient, error) {
 	useFastHTTP := configProvider.GetUseFastHTTP()
+
+	baseURL, err := configProvider.GetWebexURL("")
+	if err != nil {
+		return nil, fmt.Errorf("failed to get base URL: %w", err)
+	}
+
+	headers, err := configProvider.GetWebexHeaders()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get headers: %w", err)
+	}
 
 	client := &Client{
 		useFastHTTP:    useFastHTTP,
-		baseURL:        configProvider.GetWebexURL(""),
-		headers:        configProvider.GetWebexHeaders(),
+		baseURL:        baseURL,
+		headers:        headers,
 		configProvider: configProvider,
 	}
 
@@ -62,37 +72,52 @@ func NewClientWithConfig(configProvider config.Provider) HTTPClient {
 		}
 	}
 
-	return client
+	return client, nil
 }
 
 // Get performs a GET request
 func (c *Client) Get(endpoint string, params map[string]string) (map[string]interface{}, error) {
-	fullURL := c.buildURL(endpoint, params)
+	fullURL, err := c.buildURL(endpoint, params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to build URL: %w", err)
+	}
 	return c.doRequest("GET", fullURL, nil)
 }
 
 // Post performs a POST request
 func (c *Client) Post(endpoint string, data interface{}) (map[string]interface{}, error) {
-	fullURL := c.configProvider.GetWebexURL(endpoint)
+	fullURL, err := c.configProvider.GetWebexURL(endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get URL: %w", err)
+	}
 	return c.doRequest("POST", fullURL, data)
 }
 
 // Put performs a PUT request
 func (c *Client) Put(endpoint string, data interface{}) (map[string]interface{}, error) {
-	fullURL := c.configProvider.GetWebexURL(endpoint)
+	fullURL, err := c.configProvider.GetWebexURL(endpoint)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get URL: %w", err)
+	}
 	return c.doRequest("PUT", fullURL, data)
 }
 
 // Delete performs a DELETE request
 func (c *Client) Delete(endpoint string) error {
-	fullURL := c.configProvider.GetWebexURL(endpoint)
-	_, err := c.doRequest("DELETE", fullURL, nil)
+	fullURL, err := c.configProvider.GetWebexURL(endpoint)
+	if err != nil {
+		return fmt.Errorf("failed to get URL: %w", err)
+	}
+	_, err = c.doRequest("DELETE", fullURL, nil)
 	return err
 }
 
 // buildURL constructs URL with query parameters
-func (c *Client) buildURL(endpoint string, params map[string]string) string {
-	fullURL := c.configProvider.GetWebexURL(endpoint)
+func (c *Client) buildURL(endpoint string, params map[string]string) (string, error) {
+	fullURL, err := c.configProvider.GetWebexURL(endpoint)
+	if err != nil {
+		return "", fmt.Errorf("failed to get URL: %w", err)
+	}
 	if len(params) > 0 {
 		u, _ := url.Parse(fullURL)
 		q := u.Query()
@@ -104,7 +129,7 @@ func (c *Client) buildURL(endpoint string, params map[string]string) string {
 		u.RawQuery = q.Encode()
 		fullURL = u.String()
 	}
-	return fullURL
+	return fullURL, nil
 }
 
 // doRequest executes the HTTP request using the configured backend

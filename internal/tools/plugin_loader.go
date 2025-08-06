@@ -33,20 +33,12 @@ func (p *messagingPlugin) Version() string { return "1.0.0" }
 
 func (p *messagingPlugin) Register(registry *Registry) error {
 	tools := []Tool{
-		// Original tools
 		NewListMessagesTool(),
 		NewCreateMessageTool(),
-		NewDeleteMessageTool(),
-		NewEditMessageTool(),
 		NewGetMessageDetailsTool(),
+		NewUpdateMessageTool(),
+		NewDeleteMessageTool(),
 		NewListDirectMessagesTool(),
-
-		// Generic implementations (examples)
-		// Uncomment to test generic versions
-		// NewListMessagesToolGeneric(),
-		// NewCreateMessageToolGeneric(),
-		// NewDeleteMessageToolGeneric(),
-		// NewGetMessageDetailsToolGeneric(),
 	}
 
 	for _, tool := range tools {
@@ -202,9 +194,6 @@ func (p *miscPlugin) Register(registry *Registry) error {
 		// ECM
 		NewCreateECMFolderConfigurationTool(),
 		NewGetECMFolderDetailsTool(),
-		NewListECMFolderTool(),
-		NewUpdateECMLinkedFolderTool(),
-		NewUnlinkECMLinkedFolderTool(),
 	}
 
 	for _, tool := range tools {

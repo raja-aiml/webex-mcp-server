@@ -9,35 +9,46 @@ type MockProvider struct {
 	UseFastHTTP bool
 }
 
-func (m *MockProvider) GetWebexToken() string {
-	return m.Token
+func (m *MockProvider) GetWebexToken() (string, error) {
+	return m.Token, nil
 }
 
-func (m *MockProvider) GetWebexBaseURL() string {
-	return m.BaseURL
+func (m *MockProvider) GetWebexBaseURL() (string, error) {
+	return m.BaseURL, nil
 }
 
-func (m *MockProvider) GetWebexURL(endpoint string) string {
-	return m.BaseURL + endpoint
+func (m *MockProvider) GetWebexURL(endpoint string) (string, error) {
+	baseURL, err := m.GetWebexBaseURL()
+	if err != nil {
+		return "", err
+	}
+	return baseURL + endpoint, nil
 }
 
-func (m *MockProvider) GetWebexHeaders() map[string]string {
+func (m *MockProvider) GetWebexHeaders() (map[string]string, error) {
 	if m.Headers == nil {
-		return map[string]string{
-			"Authorization": "Bearer " + m.Token,
-			"Accept":        "application/json",
+		token, err := m.GetWebexToken()
+		if err != nil {
+			return nil, err
 		}
+		return map[string]string{
+			"Authorization": "Bearer " + token,
+			"Accept":        "application/json",
+		}, nil
 	}
-	return m.Headers
+	return m.Headers, nil
 }
 
-func (m *MockProvider) GetWebexJSONHeaders() map[string]string {
+func (m *MockProvider) GetWebexJSONHeaders() (map[string]string, error) {
 	if m.JSONHeaders == nil {
-		headers := m.GetWebexHeaders()
+		headers, err := m.GetWebexHeaders()
+		if err != nil {
+			return nil, err
+		}
 		headers["Content-Type"] = "application/json"
-		return headers
+		return headers, nil
 	}
-	return m.JSONHeaders
+	return m.JSONHeaders, nil
 }
 
 func (m *MockProvider) GetUseFastHTTP() bool {

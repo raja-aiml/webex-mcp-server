@@ -23,13 +23,29 @@ func NewToolBase(name, description string, schema *jsonschema.Schema) ToolBase {
 
 // NewToolBaseWithConfig creates a base tool with dependency injection
 func NewToolBaseWithConfig(name, description string, schema *jsonschema.Schema, configProvider config.Provider) ToolBase {
+	// Initialize the client lazily - it will be set when first used
 	return ToolBase{
 		name:           name,
 		description:    description,
 		schema:         schema,
-		client:         webex.NewClientWithConfig(configProvider),
 		configProvider: configProvider,
 	}
+}
+
+// ensureClient ensures the HTTP client is initialized
+func (t *ToolBase) ensureClient() error {
+	if t.client == nil {
+		var err error
+		if t.configProvider != nil {
+			t.client, err = webex.NewClientWithConfig(t.configProvider)
+		} else {
+			t.client, err = getDefaultClient()
+		}
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Name returns the tool name
@@ -38,13 +54,12 @@ func (t *ToolBase) Name() string { return t.name }
 // Description returns the tool description
 func (t *ToolBase) Description() string { return t.description }
 
-// GetInputSchema returns the JSON schema
+// GetInputSchema returns the tool's input schema
 func (t *ToolBase) GetInputSchema() interface{} { return t.schema }
 
-// Note: ExecuteWithMap is not implemented here because each tool that embeds ToolBase
-// should implement it by calling ExecuteWithMapBase(tool, args) from base.go
+// Factory functions for creating schemas in a consistent way
 
-// SimpleSchema creates a basic object schema with properties
+// SimpleSchema creates a simple schema with properties and required fields
 func SimpleSchema(properties map[string]*jsonschema.Schema, required []string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:       "object",
@@ -53,7 +68,7 @@ func SimpleSchema(properties map[string]*jsonschema.Schema, required []string) *
 	}
 }
 
-// StringProperty creates a string schema property
+// StringProperty creates a string property schema
 func StringProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "string",
@@ -61,7 +76,7 @@ func StringProperty(description string) *jsonschema.Schema {
 	}
 }
 
-// IntegerProperty creates an integer schema property
+// IntegerProperty creates an integer property schema
 func IntegerProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "integer",
@@ -69,7 +84,7 @@ func IntegerProperty(description string) *jsonschema.Schema {
 	}
 }
 
-// BooleanProperty creates a boolean schema property
+// BooleanProperty creates a boolean property schema
 func BooleanProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "boolean",
@@ -77,7 +92,7 @@ func BooleanProperty(description string) *jsonschema.Schema {
 	}
 }
 
-// ArrayProperty creates an array schema property
+// ArrayProperty creates an array property schema
 func ArrayProperty(description string, items *jsonschema.Schema) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "array",
@@ -86,7 +101,7 @@ func ArrayProperty(description string, items *jsonschema.Schema) *jsonschema.Sch
 	}
 }
 
-// ObjectProperty creates an object schema property
+// ObjectProperty creates an object property schema
 func ObjectProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "object",

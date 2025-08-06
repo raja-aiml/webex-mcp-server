@@ -1,82 +1,83 @@
 package tools
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
-
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
-// ListPeopleTool lists people in the organization
-type ListPeopleTool struct {
-	ToolBase
+// ListPeopleParams defines the parameters for listing people
+type ListPeopleParams struct {
+	Email       string `json:"email,omitempty" query:"email"`
+	DisplayName string `json:"displayName,omitempty" query:"displayName"`
+	Id          string `json:"id,omitempty" query:"id"`
+	OrgId       string `json:"orgId,omitempty" query:"orgId"`
+	LocationId  string `json:"locationId,omitempty" query:"locationId"`
+	Max         int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
-func NewListPeopleTool() *ListPeopleTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// CreatePersonParams defines the parameters for creating a person
+type CreatePersonParams struct {
+	Emails       []string                 `json:"emails" required:"true"`
+	PhoneNumbers []map[string]interface{} `json:"phoneNumbers,omitempty"`
+	Extension    string                   `json:"extension,omitempty"`
+	LocationId   string                   `json:"locationId,omitempty"`
+	DisplayName  string                   `json:"displayName,omitempty"`
+	FirstName    string                   `json:"firstName,omitempty"`
+	LastName     string                   `json:"lastName,omitempty"`
+	Avatar       string                   `json:"avatar,omitempty"`
+	OrgId        string                   `json:"orgId,omitempty"`
+	Roles        []string                 `json:"roles,omitempty"`
+	Licenses     []string                 `json:"licenses,omitempty"`
+	Department   string                   `json:"department,omitempty"`
+	Manager      string                   `json:"manager,omitempty"`
+	ManagerId    string                   `json:"managerId,omitempty"`
+	Title        string                   `json:"title,omitempty"`
+	Addresses    []map[string]interface{} `json:"addresses,omitempty"`
+}
+
+// UpdatePersonParams defines the parameters for updating a person
+type UpdatePersonParams struct {
+	PersonId     string                   `json:"personId" required:"true"`
+	Emails       []string                 `json:"emails,omitempty"`
+	PhoneNumbers []map[string]interface{} `json:"phoneNumbers,omitempty"`
+	Extension    string                   `json:"extension,omitempty"`
+	LocationId   string                   `json:"locationId,omitempty"`
+	DisplayName  string                   `json:"displayName,omitempty"`
+	FirstName    string                   `json:"firstName,omitempty"`
+	LastName     string                   `json:"lastName,omitempty"`
+	Avatar       string                   `json:"avatar,omitempty"`
+	OrgId        string                   `json:"orgId,omitempty"`
+	Roles        []string                 `json:"roles,omitempty"`
+	Licenses     []string                 `json:"licenses,omitempty"`
+	Department   string                   `json:"department,omitempty"`
+	Manager      string                   `json:"manager,omitempty"`
+	ManagerId    string                   `json:"managerId,omitempty"`
+	Title        string                   `json:"title,omitempty"`
+	Addresses    []map[string]interface{} `json:"addresses,omitempty"`
+	LoginEnabled bool                     `json:"loginEnabled,omitempty"`
+}
+
+// NewListPeopleTool creates a new list people tool
+func NewListPeopleTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"email":       StringProperty("List people with this email address. For non-admin requests, require an exact match."),
 		"displayName": StringProperty("List people with this display name. For non-admin requests, list people with names starting with this value."),
 		"id":          StringProperty("List people with this ID. Accepts comma-separated values for bulk lookups."),
 		"orgId":       StringProperty("List people in this organization. Only admin users can set this parameter."),
 		"locationId":  StringProperty("List people present in this location."),
 		"max":         IntegerProperty("Limit the maximum number of people in the response. Default is 100."),
-	}, []string{})
-
-	return &ListPeopleTool{
-		ToolBase: NewToolBase("list_people", "List people in your organization.", schema),
 	}
+
+	return NewListTool[ListPeopleParams](
+		"list_people",
+		"List people in your organization.",
+		"/people",
+		properties,
+	)
 }
 
-func (t *ListPeopleTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		Email       string `json:"email,omitempty"`
-		DisplayName string `json:"displayName,omitempty"`
-		Id          string `json:"id,omitempty"`
-		OrgId       string `json:"orgId,omitempty"`
-		LocationId  string `json:"locationId,omitempty"`
-		Max         int    `json:"max,omitempty"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	queryParams := make(map[string]string)
-	if params.Email != "" {
-		queryParams["email"] = params.Email
-	}
-	if params.DisplayName != "" {
-		queryParams["displayName"] = params.DisplayName
-	}
-	if params.Id != "" {
-		queryParams["id"] = params.Id
-	}
-	if params.OrgId != "" {
-		queryParams["orgId"] = params.OrgId
-	}
-	if params.LocationId != "" {
-		queryParams["locationId"] = params.LocationId
-	}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	} else {
-		queryParams["max"] = "100"
-	}
-
-	return t.client.Get("/people", queryParams)
-}
-
-func (t *ListPeopleTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// CreatePersonTool creates a new person/user account
-type CreatePersonTool struct {
-	ToolBase
-}
-
-func NewCreatePersonTool() *CreatePersonTool {
+// NewCreatePersonTool creates a new person/user account
+func NewCreatePersonTool() Tool {
 	phoneNumberSchema := &jsonschema.Schema{
 		Type: "object",
 		Properties: map[string]*jsonschema.Schema{
@@ -97,7 +98,7 @@ func NewCreatePersonTool() *CreatePersonTool {
 		},
 	}
 
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+	properties := map[string]*jsonschema.Schema{
 		"emails":       ArrayProperty("The email addresses of the person.", StringProperty("")),
 		"phoneNumbers": ArrayProperty("Phone numbers for the person.", phoneNumberSchema),
 		"extension":    StringProperty("The Webex Calling extension of the person."),
@@ -114,72 +115,31 @@ func NewCreatePersonTool() *CreatePersonTool {
 		"managerId":    StringProperty("The person ID of the manager."),
 		"title":        StringProperty("The person's title."),
 		"addresses":    ArrayProperty("A person's addresses.", addressSchema),
-	}, []string{"emails"})
-
-	return &CreatePersonTool{
-		ToolBase: NewToolBase("create_a_person", "Create a new user account for a given organization. Only an admin can create a new user account.", schema),
-	}
-}
-
-func (t *CreatePersonTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	if params["emails"] == nil {
-		return nil, fmt.Errorf("emails is required")
-	}
-
-	return t.client.Post("/people", params)
+	return NewCreateTool[CreatePersonParams](
+		"create_a_person",
+		"Create a new user account for a given organization. Only an admin can create a new user account.",
+		"/people",
+		properties,
+		[]string{"emails"},
+	)
 }
 
-func (t *CreatePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewGetPersonDetailsTool gets details for a specific person
+func NewGetPersonDetailsTool() Tool {
+	return NewGetTool(
+		"get_person_details",
+		"Shows details for a person by ID.",
+		"/people",
+		"personId",
+		"A unique identifier for the person.",
+	)
 }
 
-// GetPersonDetailsTool gets details for a specific person
-type GetPersonDetailsTool struct {
-	ToolBase
-}
-
-func NewGetPersonDetailsTool() *GetPersonDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"personId": StringProperty("A unique identifier for the person."),
-	}, []string{"personId"})
-
-	return &GetPersonDetailsTool{
-		ToolBase: NewToolBase("get_person_details", "Shows details for a person by ID.", schema),
-	}
-}
-
-func (t *GetPersonDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		PersonId string `json:"personId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.PersonId == "" {
-		return nil, fmt.Errorf("personId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/people/%s", params.PersonId), nil)
-}
-
-func (t *GetPersonDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// UpdatePersonTool updates a person's details
-type UpdatePersonTool struct {
-	ToolBase
-}
-
-func NewUpdatePersonTool() *UpdatePersonTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
+// NewUpdatePersonTool updates a person's details
+func NewUpdatePersonTool() Tool {
+	properties := map[string]*jsonschema.Schema{
 		"personId":     StringProperty("A unique identifier for the person."),
 		"emails":       ArrayProperty("The email addresses of the person.", StringProperty("")),
 		"phoneNumbers": ArrayProperty("Phone numbers for the person.", ObjectProperty("")),
@@ -198,91 +158,35 @@ func NewUpdatePersonTool() *UpdatePersonTool {
 		"title":        StringProperty("The person's title."),
 		"addresses":    ArrayProperty("A person's addresses.", ObjectProperty("")),
 		"loginEnabled": BooleanProperty("Whether the user is allowed to use Webex."),
-	}, []string{"personId"})
-
-	return &UpdatePersonTool{
-		ToolBase: NewToolBase("update_a_person", "Update details for a person by ID.", schema),
-	}
-}
-
-func (t *UpdatePersonTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	personId, ok := params["personId"].(string)
-	if !ok || personId == "" {
-		return nil, fmt.Errorf("personId is required")
-	}
-
-	delete(params, "personId")
-	return t.client.Put(fmt.Sprintf("/people/%s", personId), params)
+	return NewUpdateTool[UpdatePersonParams](
+		"update_a_person",
+		"Update details for a person by ID.",
+		"/people",
+		"personId",
+		properties,
+		[]string{"personId"},
+	)
 }
 
-func (t *UpdatePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewDeletePersonTool deletes a person
+func NewDeletePersonTool() Tool {
+	return NewDeleteTool(
+		"delete_a_person",
+		"Remove a person from the system. Only an admin can remove a person.",
+		"/people",
+		"personId",
+		"A unique identifier for the person.",
+	)
 }
 
-// DeletePersonTool deletes a person
-type DeletePersonTool struct {
-	ToolBase
-}
-
-func NewDeletePersonTool() *DeletePersonTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"personId": StringProperty("A unique identifier for the person."),
-	}, []string{"personId"})
-
-	return &DeletePersonTool{
-		ToolBase: NewToolBase("delete_a_person", "Remove a person from the system. Only an admin can remove a person.", schema),
-	}
-}
-
-func (t *DeletePersonTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		PersonId string `json:"personId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.PersonId == "" {
-		return nil, fmt.Errorf("personId is required")
-	}
-
-	if err := t.client.Delete(fmt.Sprintf("/people/%s", params.PersonId)); err != nil {
-		return nil, err
-	}
-
-	return map[string]interface{}{
-		"success": true,
-		"message": "Person deleted successfully",
-	}, nil
-}
-
-func (t *DeletePersonTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// GetMyOwnDetailsTool gets the current user's details
-type GetMyOwnDetailsTool struct {
-	ToolBase
-}
-
-func NewGetMyOwnDetailsTool() *GetMyOwnDetailsTool {
+// NewGetMyOwnDetailsTool gets the current user's details
+func NewGetMyOwnDetailsTool() Tool {
 	schema := SimpleSchema(map[string]*jsonschema.Schema{}, []string{})
 
-	return &GetMyOwnDetailsTool{
-		ToolBase: NewToolBase("get_my_own_details", "Get the details of the authenticated user.", schema),
-	}
-}
-
-func (t *GetMyOwnDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	return t.client.Get("/people/me", nil)
-}
-
-func (t *GetMyOwnDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+	return NewGenericTool("get_my_own_details", "Get the details of the authenticated user.", schema,
+		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+			return client.Get("/people/me", nil)
+		})
 }

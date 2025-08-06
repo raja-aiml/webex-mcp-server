@@ -1,302 +1,178 @@
 package tools
 
 import (
-	"encoding/json"
 	"fmt"
-	"strconv"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server-go/internal/webex"
 )
 
-// ListMessagesTool lists messages in a Webex room
-type ListMessagesTool struct {
-	ToolBase
+// ListMessagesParams defines the parameters for listing messages
+type ListMessagesParams struct {
+	RoomId         string `json:"roomId" required:"true"`
+	ParentId       string `json:"parentId,omitempty" query:"parentId"`
+	MentionedPeople string `json:"mentionedPeople,omitempty" query:"mentionedPeople"`
+	Before         string `json:"before,omitempty" query:"before"`
+	BeforeMessage  string `json:"beforeMessage,omitempty" query:"beforeMessage"`
+	Max            int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
-func NewListMessagesTool() *ListMessagesTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId":          StringProperty("The ID of the room to list messages from."),
-		"parentId":        StringProperty("The ID of the parent message to filter by."),
-		"mentionedPeople": StringProperty("List messages with these people mentioned, by ID."),
-		"before":          StringProperty("List messages sent before a specific date and time."),
-		"beforeMessage":   StringProperty("List messages sent before a specific message, by ID."),
-		"max":             IntegerProperty("Limit the maximum number of messages in the response."),
-	}, []string{"roomId"})
-
-	return &ListMessagesTool{
-		ToolBase: NewToolBase("list_messages", "List messages in a Webex room.", schema),
-	}
+// CreateMessageParams defines the parameters for creating a message
+type CreateMessageParams struct {
+	RoomId      string                   `json:"roomId,omitempty"`
+	ToPersonId  string                   `json:"toPersonId,omitempty"`
+	ToPersonEmail string                 `json:"toPersonEmail,omitempty"`
+	Text        string                   `json:"text,omitempty"`
+	Markdown    string                   `json:"markdown,omitempty"`
+	Html        string                   `json:"html,omitempty"`
+	Files       []string                 `json:"files,omitempty"`
+	Attachments []map[string]interface{} `json:"attachments,omitempty"`
+	ParentId    string                   `json:"parentId,omitempty"`
 }
 
-func (t *ListMessagesTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		RoomId          string `json:"roomId"`
-		ParentId        string `json:"parentId,omitempty"`
-		MentionedPeople string `json:"mentionedPeople,omitempty"`
-		Before          string `json:"before,omitempty"`
-		BeforeMessage   string `json:"beforeMessage,omitempty"`
-		Max             int    `json:"max,omitempty"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.RoomId == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	queryParams := map[string]string{"roomId": params.RoomId}
-	if params.ParentId != "" {
-		queryParams["parentId"] = params.ParentId
-	}
-	if params.MentionedPeople != "" {
-		queryParams["mentionedPeople"] = params.MentionedPeople
-	}
-	if params.Before != "" {
-		queryParams["before"] = params.Before
-	}
-	if params.BeforeMessage != "" {
-		queryParams["beforeMessage"] = params.BeforeMessage
-	}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	}
-
-	return t.client.Get("/messages", queryParams)
+// UpdateMessageParams defines the parameters for updating a message
+type UpdateMessageParams struct {
+	MessageId   string `json:"messageId" required:"true"`
+	RoomId      string `json:"roomId" required:"true"`
+	Text        string `json:"text,omitempty"`
+	Markdown    string `json:"markdown,omitempty"`
 }
 
-func (t *ListMessagesTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewListMessagesTool lists messages in a room
+func NewListMessagesTool() Tool {
+	properties := map[string]*jsonschema.Schema{
+		"roomId":         StringProperty("List messages in a room, by ID."),
+		"parentId":       StringProperty("List messages with a parent, by ID."),
+		"mentionedPeople": StringProperty("List messages with these people mentioned."),
+		"before":         StringProperty("List messages sent before a date and time (ISO8601 format)."),
+		"beforeMessage":  StringProperty("List messages sent before a message, by ID."),
+		"max":            IntegerProperty("Limit the maximum number of messages in the response."),
+	}
+
+	return NewListTool[ListMessagesParams](
+		"list_messages",
+		"List messages in a room.",
+		"/messages",
+		properties,
+	)
 }
 
-// CreateMessageTool creates a new message in a Webex room
-type CreateMessageTool struct {
-	ToolBase
-}
+// NewCreateMessageTool creates a new message
+func NewCreateMessageTool() Tool {
+	attachmentSchema := &jsonschema.Schema{
+		Type: "object",
+		Properties: map[string]*jsonschema.Schema{
+			"contentType": StringProperty("The content type of the attachment."),
+			"content":     ObjectProperty("The content of the attachment."),
+		},
+	}
 
-func NewCreateMessageTool() *CreateMessageTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"roomId":        StringProperty("The ID of the room to send the message to."),
-		"parentId":      StringProperty("The ID of the parent message (for threaded messages)."),
-		"toPersonId":    StringProperty("The ID of the person to send a direct message to."),
-		"toPersonEmail": StringProperty("The email address of the person to send a direct message to."),
+	properties := map[string]*jsonschema.Schema{
+		"roomId":        StringProperty("The room ID of the message."),
+		"toPersonId":    StringProperty("The person ID of the recipient when sending a 1:1 message."),
+		"toPersonEmail": StringProperty("The email address of the recipient when sending a 1:1 message."),
 		"text":          StringProperty("The plain text content of the message."),
-		"markdown":      StringProperty("The markdown content of the message."),
+		"markdown":      StringProperty("The Markdown content of the message."),
 		"html":          StringProperty("The HTML content of the message."),
-		"files":         ArrayProperty("Array of file URLs to attach to the message.", StringProperty("")),
-		"attachments":   ArrayProperty("Array of attachment objects for cards.", ObjectProperty("")),
-	}, []string{})
-
-	return &CreateMessageTool{
-		ToolBase: NewToolBase("create_message", "Create a new message in a Webex room.", schema),
+		"files":         ArrayProperty("File URLs to be attached to the message.", StringProperty("")),
+		"attachments":   ArrayProperty("Content attachments to attach to the message.", attachmentSchema),
+		"parentId":      StringProperty("The parent message to reply to."),
 	}
+
+	// Custom validation for this tool
+	schema := SimpleSchema(properties, []string{})
+
+	return NewGenericTool("create_a_message", "Post a new message to a room or person.", schema,
+		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+			// Validate that at least one recipient is specified
+			hasRoom := (*params)["roomId"] != nil && (*params)["roomId"] != ""
+			hasPersonId := (*params)["toPersonId"] != nil && (*params)["toPersonId"] != ""
+			hasPersonEmail := (*params)["toPersonEmail"] != nil && (*params)["toPersonEmail"] != ""
+			
+			if !hasRoom && !hasPersonId && !hasPersonEmail {
+				return nil, fmt.Errorf("at least one of roomId, toPersonId, or toPersonEmail is required")
+			}
+			
+			// Validate that at least one content field is specified
+			hasText := (*params)["text"] != nil && (*params)["text"] != ""
+			hasMarkdown := (*params)["markdown"] != nil && (*params)["markdown"] != ""
+			hasHtml := (*params)["html"] != nil && (*params)["html"] != ""
+			hasFiles := (*params)["files"] != nil
+			hasAttachments := (*params)["attachments"] != nil
+			
+			if !hasText && !hasMarkdown && !hasHtml && !hasFiles && !hasAttachments {
+				return nil, fmt.Errorf("at least one of text, markdown, html, files, or attachments is required")
+			}
+			
+			return client.Post("/messages", *params)
+		})
 }
 
-func (t *CreateMessageTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	// Validate that at least one recipient is specified
-	if params["roomId"] == nil && params["toPersonId"] == nil && params["toPersonEmail"] == nil {
-		return nil, fmt.Errorf("one of roomId, toPersonId, or toPersonEmail is required")
-	}
-
-	// Validate that at least one content type is specified
-	if params["text"] == nil && params["markdown"] == nil && params["html"] == nil &&
-		params["files"] == nil && params["attachments"] == nil {
-		return nil, fmt.Errorf("at least one of text, markdown, html, files, or attachments is required")
-	}
-
-	return t.client.Post("/messages", params)
+// NewGetMessageDetailsTool gets details of a specific message
+func NewGetMessageDetailsTool() Tool {
+	return NewGetTool(
+		"get_message_details",
+		"Get details of a message by ID.",
+		"/messages",
+		"messageId",
+		"The unique identifier for the message.",
+	)
 }
 
-func (t *CreateMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// DeleteMessageTool deletes a message from Webex
-type DeleteMessageTool struct {
-	ToolBase
-}
-
-func NewDeleteMessageTool() *DeleteMessageTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"messageId": StringProperty("The ID of the message to delete."),
-	}, []string{"messageId"})
-
-	return &DeleteMessageTool{
-		ToolBase: NewToolBase("delete_message", "Delete a message from Webex.", schema),
-	}
-}
-
-func (t *DeleteMessageTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		MessageId string `json:"messageId"`
+// NewUpdateMessageTool updates a message
+func NewUpdateMessageTool() Tool {
+	properties := map[string]*jsonschema.Schema{
+		"messageId": StringProperty("The unique identifier for the message."),
+		"roomId":    StringProperty("The room ID of the message."),
+		"text":      StringProperty("The plain text content of the message."),
+		"markdown":  StringProperty("The Markdown content of the message."),
 	}
 
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.MessageId == "" {
-		return nil, fmt.Errorf("messageId is required")
-	}
-
-	err := t.client.Delete(fmt.Sprintf("/messages/%s", params.MessageId))
-	if err != nil {
-		return nil, err
-	}
-
-	return map[string]interface{}{"success": true}, nil
+	return NewUpdateTool[UpdateMessageParams](
+		"update_a_message",
+		"Update a message.",
+		"/messages",
+		"messageId",
+		properties,
+		[]string{"messageId", "roomId"},
+	)
 }
 
-func (t *DeleteMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewDeleteMessageTool deletes a message
+func NewDeleteMessageTool() Tool {
+	return NewDeleteTool(
+		"delete_a_message",
+		"Delete a message.",
+		"/messages",
+		"messageId",
+		"The unique identifier for the message.",
+	)
 }
 
-// EditMessageTool edits an existing message in Webex
-type EditMessageTool struct {
-	ToolBase
-}
-
-func NewEditMessageTool() *EditMessageTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"messageId": StringProperty("The ID of the message to edit."),
-		"roomId":    StringProperty("The ID of the room containing the message."),
-		"text":      StringProperty("The new plain text content of the message."),
-		"markdown":  StringProperty("The new markdown content of the message."),
-		"html":      StringProperty("The new HTML content of the message."),
-	}, []string{"messageId", "roomId"})
-
-	return &EditMessageTool{
-		ToolBase: NewToolBase("edit_message", "Edit an existing message in Webex.", schema),
-	}
-}
-
-func (t *EditMessageTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params map[string]interface{}
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	messageId, ok := params["messageId"].(string)
-	if !ok || messageId == "" {
-		return nil, fmt.Errorf("messageId is required")
-	}
-
-	if params["roomId"] == nil || params["roomId"] == "" {
-		return nil, fmt.Errorf("roomId is required")
-	}
-
-	// At least one content type must be specified
-	if params["text"] == nil && params["markdown"] == nil && params["html"] == nil {
-		return nil, fmt.Errorf("at least one of text, markdown, or html is required")
-	}
-
-	// Remove messageId from params as it's in the URL
-	delete(params, "messageId")
-
-	return t.client.Put(fmt.Sprintf("/messages/%s", messageId), params)
-}
-
-func (t *EditMessageTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// GetMessageDetailsTool gets details of a specific message
-type GetMessageDetailsTool struct {
-	ToolBase
-}
-
-func NewGetMessageDetailsTool() *GetMessageDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"messageId": StringProperty("The ID of the message to get details for."),
-	}, []string{"messageId"})
-
-	return &GetMessageDetailsTool{
-		ToolBase: NewToolBase("get_message_details", "Get details of a specific message.", schema),
-	}
-}
-
-func (t *GetMessageDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		MessageId string `json:"messageId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.MessageId == "" {
-		return nil, fmt.Errorf("messageId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/messages/%s", params.MessageId), nil)
-}
-
-func (t *GetMessageDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// ListDirectMessagesTool lists direct messages between two people
-type ListDirectMessagesTool struct {
-	ToolBase
-}
-
-func NewListDirectMessagesTool() *ListDirectMessagesTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"personId":      StringProperty("The ID of the person to list direct messages with."),
-		"personEmail":   StringProperty("The email of the person to list direct messages with."),
+// NewListDirectMessagesTool lists direct messages
+func NewListDirectMessagesTool() Tool {
+	properties := map[string]*jsonschema.Schema{
+		"personId":      StringProperty("List messages in a 1:1 room with this person."),
+		"personEmail":   StringProperty("List messages in a 1:1 room with this person email."),
 		"max":           IntegerProperty("Limit the maximum number of messages in the response."),
-		"before":        StringProperty("List messages sent before a specific date and time."),
-		"beforeMessage": StringProperty("List messages sent before a specific message, by ID."),
-	}, []string{})
-
-	return &ListDirectMessagesTool{
-		ToolBase: NewToolBase("list_direct_messages", "List direct messages with a person.", schema),
-	}
-}
-
-func (t *ListDirectMessagesTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		PersonId      string `json:"personId,omitempty"`
-		PersonEmail   string `json:"personEmail,omitempty"`
-		Max           int    `json:"max,omitempty"`
-		Before        string `json:"before,omitempty"`
-		BeforeMessage string `json:"beforeMessage,omitempty"`
 	}
 
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
+	schema := SimpleSchema(properties, []string{})
 
-	if params.PersonId == "" && params.PersonEmail == "" {
-		return nil, fmt.Errorf("either personId or personEmail is required")
-	}
-
-	queryParams := map[string]string{}
-	if params.PersonId != "" {
-		queryParams["personId"] = params.PersonId
-	}
-	if params.PersonEmail != "" {
-		queryParams["personEmail"] = params.PersonEmail
-	}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	}
-	if params.Before != "" {
-		queryParams["before"] = params.Before
-	}
-	if params.BeforeMessage != "" {
-		queryParams["beforeMessage"] = params.BeforeMessage
-	}
-
-	return t.client.Get("/messages/direct", queryParams)
-}
-
-func (t *ListDirectMessagesTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+	return NewGenericTool("list_direct_messages", "List messages in a 1:1 space.", schema,
+		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+			queryParams := make(map[string]string)
+			
+			if personId, ok := (*params)["personId"].(string); ok && personId != "" {
+				queryParams["personId"] = personId
+			}
+			if personEmail, ok := (*params)["personEmail"].(string); ok && personEmail != "" {
+				queryParams["personEmail"] = personEmail
+			}
+			if max, ok := (*params)["max"].(float64); ok && max > 0 {
+				queryParams["max"] = fmt.Sprintf("%d", int(max))
+			}
+			
+			return client.Get("/messages/direct", queryParams)
+		})
 }

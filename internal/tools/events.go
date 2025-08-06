@@ -1,107 +1,45 @@
 package tools
 
 import (
-	"encoding/json"
-	"fmt"
-	"strconv"
-
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
 )
 
-// Event Tools - Read operations for events
-
-// ListEventsTool lists events
-type ListEventsTool struct {
-	ToolBase
+// ListEventsParams defines the parameters for listing events
+type ListEventsParams struct {
+	Resource   string `json:"resource,omitempty" query:"resource"`
+	Type       string `json:"type,omitempty" query:"type"`
+	ActorId    string `json:"actorId,omitempty" query:"actorId"`
+	From       string `json:"from,omitempty" query:"from"`
+	To         string `json:"to,omitempty" query:"to"`
+	Max        int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
-func NewListEventsTool() *ListEventsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"resource": StringProperty("Limit events to a specific resource type."),
-		"type":     StringProperty("Limit events to a specific event type."),
-		"actorId":  StringProperty("Limit events to those performed by a specific person."),
-		"from":     StringProperty("Limit events to those that occurred after this date and time."),
-		"to":       StringProperty("Limit events to those that occurred before this date and time."),
+// NewListEventsTool lists events
+func NewListEventsTool() Tool {
+	properties := map[string]*jsonschema.Schema{
+		"resource": StringProperty("List events related to this resource. Possible values: messages, memberships, etc."),
+		"type":     StringProperty("List events of this type. Possible values: created, updated, deleted."),
+		"actorId":  StringProperty("List events performed by this person, by ID."),
+		"from":     StringProperty("List events which occurred after this date and time (ISO8601 format)."),
+		"to":       StringProperty("List events which occurred before this date and time (ISO8601 format)."),
 		"max":      IntegerProperty("Limit the maximum number of events in the response."),
-	}, []string{})
-
-	return &ListEventsTool{
-		ToolBase: NewToolBase("list_events", "List events", schema),
 	}
+
+	return NewListTool[ListEventsParams](
+		"list_events",
+		"List events in your organization.",
+		"/events",
+		properties,
+	)
 }
 
-func (t *ListEventsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		Resource string `json:"resource,omitempty"`
-		Type     string `json:"type,omitempty"`
-		ActorId  string `json:"actorId,omitempty"`
-		From     string `json:"from,omitempty"`
-		To       string `json:"to,omitempty"`
-		Max      int    `json:"max,omitempty"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	queryParams := make(map[string]string)
-	if params.Resource != "" {
-		queryParams["resource"] = params.Resource
-	}
-	if params.Type != "" {
-		queryParams["type"] = params.Type
-	}
-	if params.ActorId != "" {
-		queryParams["actorId"] = params.ActorId
-	}
-	if params.From != "" {
-		queryParams["from"] = params.From
-	}
-	if params.To != "" {
-		queryParams["to"] = params.To
-	}
-	if params.Max > 0 {
-		queryParams["max"] = strconv.Itoa(params.Max)
-	}
-
-	return t.client.Get("/events", queryParams)
-}
-
-func (t *ListEventsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
-}
-
-// GetEventDetailsTool gets event details
-type GetEventDetailsTool struct {
-	ToolBase
-}
-
-func NewGetEventDetailsTool() *GetEventDetailsTool {
-	schema := SimpleSchema(map[string]*jsonschema.Schema{
-		"eventId": StringProperty("The unique identifier for the event."),
-	}, []string{"eventId"})
-
-	return &GetEventDetailsTool{
-		ToolBase: NewToolBase("get_event_details", "Get event details", schema),
-	}
-}
-
-func (t *GetEventDetailsTool) Execute(args json.RawMessage) (interface{}, error) {
-	var params struct {
-		EventId string `json:"eventId"`
-	}
-
-	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
-	}
-
-	if params.EventId == "" {
-		return nil, fmt.Errorf("eventId is required")
-	}
-
-	return t.client.Get(fmt.Sprintf("/events/%s", params.EventId), nil)
-}
-
-func (t *GetEventDetailsTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
-	return ExecuteWithMapBase(t, args)
+// NewGetEventDetailsTool gets event details
+func NewGetEventDetailsTool() Tool {
+	return NewGetTool(
+		"get_event_details",
+		"Get details for an event by ID.",
+		"/events",
+		"eventId",
+		"The unique identifier for the event.",
+	)
 }
