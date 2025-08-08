@@ -1,5 +1,14 @@
 # Claude Development Instructions
 
+## Important Git Commit Guidelines
+
+**NEVER** include the following in git commit messages:
+- 🤖 Generated with [Claude Code](https://claude.ai/code)
+- Co-Authored-By: Claude <noreply@anthropic.com>
+- Any other Claude attribution or emojis
+
+Keep commit messages clean and professional.
+
 ## Environment Setup
 **ALWAYS** source the `.env` file before running any commands:
 ```bash
