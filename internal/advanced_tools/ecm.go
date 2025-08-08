@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// CreateECMFolderConfigurationParams defines the parameters for creating an ECM folder configuration
+
 type CreateECMFolderConfigurationParams struct {
 	RoomId      string `json:"roomId" required:"true"`
 	FolderId    string `json:"folderId" required:"true"`
@@ -19,7 +20,7 @@ func NewCreateECMFolderConfigurationTool() Tool {
 		"displayName": StringProperty("A user-friendly name for the ECM folder."),
 	}
 
-	return NewCreateTool[CreateECMFolderConfigurationParams](
+	return tools.NewCreateTool[CreateECMFolderConfigurationParams](
 		"create_an_ecm_folder_configuration",
 		"Create an ECM folder configuration",
 		"/rooms/linkedFolders",
@@ -30,7 +31,7 @@ func NewCreateECMFolderConfigurationTool() Tool {
 
 // NewGetECMFolderDetailsTool gets ECM folder details
 func NewGetECMFolderDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_ecm_folder_details",
 		"Get details for an ECM folder by ID.",
 		"/rooms/linkedFolders",

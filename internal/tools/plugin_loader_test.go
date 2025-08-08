@@ -7,7 +7,7 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 )
 
-func TestPluginImplementations(t *testing.T) {
+func TestCorePluginImplementations(t *testing.T) {
 	// Set up environment for tools that need default client
 	config.ResetForTesting()
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
@@ -27,45 +27,21 @@ func TestPluginImplementations(t *testing.T) {
 		wantVersion string
 	}{
 		{
-			name:        "messagingPlugin",
-			plugin:      &messagingPlugin{},
-			wantName:    "messaging",
+			name:        "coreMessagingPlugin",
+			plugin:      &coreMessagingPlugin{},
+			wantName:    "core-messaging",
 			wantVersion: "1.0.0",
 		},
 		{
-			name:        "roomsPlugin",
-			plugin:      &roomsPlugin{},
-			wantName:    "rooms",
+			name:        "coreWebhooksPlugin",
+			plugin:      &coreWebhooksPlugin{},
+			wantName:    "core-webhooks",
 			wantVersion: "1.0.0",
 		},
 		{
-			name:        "peoplePlugin",
-			plugin:      &peoplePlugin{},
-			wantName:    "people",
-			wantVersion: "1.0.0",
-		},
-		{
-			name:        "membershipPlugin",
-			plugin:      &membershipPlugin{},
-			wantName:    "membership",
-			wantVersion: "1.0.0",
-		},
-		{
-			name:        "teamsPlugin",
-			plugin:      &teamsPlugin{},
-			wantName:    "teams",
-			wantVersion: "1.0.0",
-		},
-		{
-			name:        "webhooksPlugin",
-			plugin:      &webhooksPlugin{},
-			wantName:    "webhooks",
-			wantVersion: "1.0.0",
-		},
-		{
-			name:        "miscPlugin",
-			plugin:      &miscPlugin{},
-			wantName:    "misc",
+			name:        "coreInfoPlugin",
+			plugin:      &coreInfoPlugin{},
+			wantName:    "core-info",
 			wantVersion: "1.0.0",
 		},
 	}
@@ -82,7 +58,7 @@ func TestPluginImplementations(t *testing.T) {
 	}
 }
 
-func TestPluginRegister(t *testing.T) {
+func TestCorePluginRegister(t *testing.T) {
 	// Set up environment for tools that need default client
 	config.ResetForTesting()
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
@@ -97,13 +73,9 @@ func TestPluginRegister(t *testing.T) {
 	
 	// Test that each plugin can register its tools without error
 	plugins := []interface{ Name() string; Register(*Registry) error }{
-		&messagingPlugin{},
-		&roomsPlugin{},
-		&peoplePlugin{},
-		&membershipPlugin{},
-		&teamsPlugin{},
-		&webhooksPlugin{},
-		&miscPlugin{},
+		&coreMessagingPlugin{},
+		&coreWebhooksPlugin{},
+		&coreInfoPlugin{},
 	}
 
 	for _, plugin := range plugins {

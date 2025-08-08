@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListMembershipsParams defines the parameters for listing memberships
+
 type ListMembershipsParams struct {
 	RoomId      string `json:"roomId,omitempty" query:"roomId"`
 	PersonId    string `json:"personId,omitempty" query:"personId"`
@@ -35,7 +36,7 @@ func NewListMembershipsTool() Tool {
 		"max":         IntegerProperty("Limit the maximum number of memberships."),
 	}
 
-	return NewListTool[ListMembershipsParams](
+	return tools.NewListTool[ListMembershipsParams](
 		"list_memberships",
 		"List room memberships",
 		"/memberships",
@@ -52,7 +53,7 @@ func NewCreateMembershipTool() Tool {
 		"isModerator": BooleanProperty("Whether the person is a room moderator."),
 	}
 
-	return NewCreateTool[CreateMembershipParams](
+	return tools.NewCreateTool[CreateMembershipParams](
 		"create_a_membership",
 		"Add someone to a room by Person ID or email address.",
 		"/memberships",
@@ -63,7 +64,7 @@ func NewCreateMembershipTool() Tool {
 
 // NewGetMembershipDetailsTool gets membership details
 func NewGetMembershipDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_membership_details",
 		"Get details for a membership by ID.",
 		"/memberships",
@@ -79,7 +80,7 @@ func NewUpdateMembershipTool() Tool {
 		"isModerator":  BooleanProperty("Whether the person is a room moderator."),
 	}
 
-	return NewUpdateTool[UpdateMembershipParams](
+	return tools.NewUpdateTool[UpdateMembershipParams](
 		"update_a_membership",
 		"Update properties for a membership by ID.",
 		"/memberships",
@@ -91,7 +92,7 @@ func NewUpdateMembershipTool() Tool {
 
 // NewDeleteMembershipTool deletes a membership
 func NewDeleteMembershipTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_membership",
 		"Delete a membership by ID.",
 		"/memberships",

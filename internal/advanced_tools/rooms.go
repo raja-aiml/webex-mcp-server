@@ -1,13 +1,13 @@
-package tools
+package advanced_tools
 
 import (
 	"fmt"
-
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
-// ListRoomsParams defines the parameters for listing rooms
+
 type ListRoomsParams struct {
 	TeamId string `json:"teamId,omitempty" query:"teamId"`
 	Type   string `json:"type,omitempty" query:"type"`
@@ -39,22 +39,6 @@ type UpdateRoomParams struct {
 	IsReadOnly         bool   `json:"isReadOnly,omitempty"`
 }
 
-// NewListRoomsTool lists Webex rooms
-func NewListRoomsTool() Tool {
-	properties := map[string]*jsonschema.Schema{
-		"teamId": StringProperty("List rooms associated with a team, by ID."),
-		"type":   StringProperty("List rooms by type: 'direct' or 'group'."),
-		"sortBy": StringProperty("Sort results by: 'id', 'lastactivity', or 'created'."),
-		"max":    IntegerProperty("Limit the maximum number of rooms in the response."),
-	}
-
-	return NewListTool[ListRoomsParams](
-		"list_rooms",
-		"List Webex rooms.",
-		"/rooms",
-		properties,
-	)
-}
 
 // NewCreateRoomTool creates a new Webex room
 func NewCreateRoomTool() Tool {
@@ -68,7 +52,7 @@ func NewCreateRoomTool() Tool {
 		"isAnnouncementOnly": BooleanProperty("Whether the room is announcement only."),
 	}
 
-	return NewCreateTool[CreateRoomParams](
+	return tools.NewCreateTool[CreateRoomParams](
 		"create_a_room",
 		"Create a new Webex room.",
 		"/rooms",
@@ -79,7 +63,7 @@ func NewCreateRoomTool() Tool {
 
 // NewGetRoomDetailsTool gets details of a specific room
 func NewGetRoomDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_room_details",
 		"Get details of a specific room.",
 		"/rooms",
@@ -102,7 +86,7 @@ func NewUpdateRoomTool() Tool {
 		"isReadOnly":         BooleanProperty("Whether the room is read only."),
 	}
 
-	return NewUpdateTool[UpdateRoomParams](
+	return tools.NewUpdateTool[UpdateRoomParams](
 		"update_a_room",
 		"Update a room.",
 		"/rooms",
@@ -114,7 +98,7 @@ func NewUpdateRoomTool() Tool {
 
 // NewDeleteRoomTool deletes a room
 func NewDeleteRoomTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_room",
 		"Delete a room.",
 		"/rooms",
@@ -129,7 +113,7 @@ func NewGetRoomMeetingDetailsTool() Tool {
 		"roomId": StringProperty("The unique identifier for the room."),
 	}, []string{"roomId"})
 
-	return NewGenericTool("get_room_meeting_details", "Get meeting details for a room.", schema,
+	return tools.NewGenericTool("get_room_meeting_details", "Get meeting details for a room.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
 			roomId, ok := (*params)["roomId"].(string)
 			if !ok || roomId == "" {

@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListTeamsParams defines the parameters for listing teams
+
 type ListTeamsParams struct {
 	Max int `json:"max,omitempty" query:"max" includeZero:"false"`
 }
@@ -28,7 +29,7 @@ func NewListTeamsTool() Tool {
 		"max": IntegerProperty("Limit the maximum number of teams in the response."),
 	}
 
-	return NewListTool[ListTeamsParams](
+	return tools.NewListTool[ListTeamsParams](
 		"list_teams",
 		"List teams to which the authenticated user belongs.",
 		"/teams",
@@ -43,7 +44,7 @@ func NewCreateTeamTool() Tool {
 		"description": StringProperty("The description of the team."),
 	}
 
-	return NewCreateTool[CreateTeamParams](
+	return tools.NewCreateTool[CreateTeamParams](
 		"create_a_team",
 		"Create a new team.",
 		"/teams",
@@ -54,7 +55,7 @@ func NewCreateTeamTool() Tool {
 
 // NewGetTeamDetailsTool gets team details
 func NewGetTeamDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_team_details",
 		"Get details for a team by ID.",
 		"/teams",
@@ -71,7 +72,7 @@ func NewUpdateTeamTool() Tool {
 		"description": StringProperty("The description of the team."),
 	}
 
-	return NewUpdateTool[UpdateTeamParams](
+	return tools.NewUpdateTool[UpdateTeamParams](
 		"update_a_team",
 		"Update details for a team by ID.",
 		"/teams",
@@ -83,7 +84,7 @@ func NewUpdateTeamTool() Tool {
 
 // NewDeleteTeamTool deletes a team
 func NewDeleteTeamTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_team",
 		"Delete a team.",
 		"/teams",

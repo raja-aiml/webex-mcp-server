@@ -1,11 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
-	"github.com/raja-aiml/webex-mcp-server/internal/webex"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListPeopleParams defines the parameters for listing people
+
 type ListPeopleParams struct {
 	Email       string `json:"email,omitempty" query:"email"`
 	DisplayName string `json:"displayName,omitempty" query:"displayName"`
@@ -68,7 +68,7 @@ func NewListPeopleTool() Tool {
 		"max":         IntegerProperty("Limit the maximum number of people in the response. Default is 100."),
 	}
 
-	return NewListTool[ListPeopleParams](
+	return tools.NewListTool[ListPeopleParams](
 		"list_people",
 		"List people in your organization.",
 		"/people",
@@ -117,7 +117,7 @@ func NewCreatePersonTool() Tool {
 		"addresses":    ArrayProperty("A person's addresses.", addressSchema),
 	}
 
-	return NewCreateTool[CreatePersonParams](
+	return tools.NewCreateTool[CreatePersonParams](
 		"create_a_person",
 		"Create a new user account for a given organization. Only an admin can create a new user account.",
 		"/people",
@@ -128,7 +128,7 @@ func NewCreatePersonTool() Tool {
 
 // NewGetPersonDetailsTool gets details for a specific person
 func NewGetPersonDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_person_details",
 		"Shows details for a person by ID.",
 		"/people",
@@ -160,7 +160,7 @@ func NewUpdatePersonTool() Tool {
 		"loginEnabled": BooleanProperty("Whether the user is allowed to use Webex."),
 	}
 
-	return NewUpdateTool[UpdatePersonParams](
+	return tools.NewUpdateTool[UpdatePersonParams](
 		"update_a_person",
 		"Update details for a person by ID.",
 		"/people",
@@ -172,7 +172,7 @@ func NewUpdatePersonTool() Tool {
 
 // NewDeletePersonTool deletes a person
 func NewDeletePersonTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_person",
 		"Remove a person from the system. Only an admin can remove a person.",
 		"/people",
@@ -181,12 +181,3 @@ func NewDeletePersonTool() Tool {
 	)
 }
 
-// NewGetMyOwnDetailsTool gets the current user's details
-func NewGetMyOwnDetailsTool() Tool {
-	schema := SimpleSchema("Get the details of the authenticated user.", map[string]*jsonschema.Schema{}, []string{})
-
-	return NewGenericTool("get_my_own_details", "Get the details of the authenticated user.", schema,
-		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
-			return client.Get("/people/me", nil)
-		})
-}

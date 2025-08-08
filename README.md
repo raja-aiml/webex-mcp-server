@@ -46,11 +46,10 @@ In Claude, you can now say:
 - MCP protocol support using the official Go SDK
 - Support for both stdio and SSE (Server-Sent Events) transports
 - Comprehensive tool registry with 53 Webex operations
-- **Flexible HTTP client** with configurable backend:
-  - Standard `net/http` for compatibility (default)
-  - Optional `fasthttp` for 10x performance improvement
-  - Automatic connection pooling and reuse
-  - Configurable via `USE_FASTHTTP` environment variable
+- **Optimized HTTP client**:
+  - Standard `net/http` with connection pooling
+  - Automatic connection reuse
+  - Configurable timeouts and retry logic
 
 ## Prerequisites
 
@@ -84,12 +83,11 @@ Create a `.env` file with the following variables:
 WEBEX_PUBLIC_WORKSPACE_API_KEY=your_webex_api_token_here
 WEBEX_API_BASE_URL=https://webexapis.com/v1
 PORT=3001
-USE_FASTHTTP=false  # Set to true for performance optimization
 ```
 
 ## Quick Start with Claude Desktop
 
-**This MCP server is designed to work with Claude Desktop.** See the [Claude Desktop Quick Start Guide](docs/CLAUDE_DESKTOP_QUICK_START.md).
+**This MCP server is designed to work with Claude Desktop.**
 
 ### 1. Build the server:
 ```bash
@@ -214,7 +212,7 @@ webex-mcp-server-go/
 ├── config/                 - Configuration management
 │   └── config.go          - Environment and API configuration
 ├── webex/                  - Webex API client implementation
-│   ├── client.go          - Unified HTTP client (supports net/http and fasthttp)
+│   ├── client.go          - HTTP client with connection pooling
 │   └── interface.go       - HTTPClient interface (DI/IoC)
 └── tools/                  - MCP tool implementations (53 tools)
     ├── base.go            - Base tool functionality (DRY)

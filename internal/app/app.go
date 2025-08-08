@@ -13,10 +13,11 @@ import (
 
 // Config holds the application configuration
 type Config struct {
-	Name     string
-	Version  string
-	HTTPAddr string
-	EnvPath  string // Path to .env file
+	Name        string
+	Version     string
+	HTTPAddr    string
+	EnvPath     string // Path to .env file
+	UseAllTools bool   // Whether to load all tools or just core tools
 }
 
 // App represents the main application
@@ -43,8 +44,8 @@ func (a *App) Run() error {
 		return err
 	}
 
-	// Create MCP server
-	mcpServer, err := server.CreateMCPServer(a.config.Name, a.config.Version)
+	// Create MCP server with specified mode
+	mcpServer, err := server.CreateMCPServerWithMode(a.config.Name, a.config.Version, a.config.UseAllTools)
 	if err != nil {
 		return err
 	}

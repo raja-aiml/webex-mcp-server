@@ -16,8 +16,13 @@ func RunHTTPServer(ctx context.Context, httpAddr string, server *mcp.Server, ser
 	mux := handlers.SetupHTTPHandlers(server, serviceName, version)
 
 	httpServer := &http.Server{
-		Addr:    httpAddr,
-		Handler: mux,
+		Addr:              httpAddr,
+		Handler:           mux,
+		ReadTimeout:       10 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		WriteTimeout:      15 * time.Second,
+		IdleTimeout:       60 * time.Second,
+		MaxHeaderBytes:    1 << 20, // 1 MB
 	}
 
 	// Start server in goroutine
@@ -41,7 +46,15 @@ func RunHTTPServer(ctx context.Context, httpAddr string, server *mcp.Server, ser
 
 // RunStdioServer starts the server in stdio mode with context support
 func RunStdioServer(ctx context.Context, server *mcp.Server, serviceName, version string) error {
-	transport := mcp.NewLoggingTransport(mcp.NewStdioTransport(), os.Stderr)
+	// Create base stdio transport
+	var transport mcp.Transport = mcp.NewStdioTransport()
+	
+	// Only enable logging if MCP_DEBUG environment variable is set
+	if os.Getenv("MCP_DEBUG") == "true" {
+		transport = mcp.NewLoggingTransport(transport, os.Stderr)
+		log.Println("MCP debug logging enabled (set MCP_DEBUG=false to disable)")
+	}
+	
 	log.Printf("Starting %s v%s in stdio mode", serviceName, version)
 
 	// Run with context

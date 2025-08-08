@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListRoomTabsParams defines the parameters for listing room tabs
+
 type ListRoomTabsParams struct {
 	RoomId string `json:"roomId" required:"true"`
 }
@@ -29,7 +30,7 @@ func NewListRoomTabsTool() Tool {
 		"roomId": StringProperty("List tabs for a room, by room ID."),
 	}
 
-	return NewListTool[ListRoomTabsParams](
+	return tools.NewListTool[ListRoomTabsParams](
 		"list_room_tabs",
 		"List tabs for a room.",
 		"/roomTabs",
@@ -45,7 +46,7 @@ func NewCreateRoomTabTool() Tool {
 		"displayName": StringProperty("User-friendly name for the tab."),
 	}
 
-	return NewCreateTool[CreateRoomTabParams](
+	return tools.NewCreateTool[CreateRoomTabParams](
 		"create_a_room_tab",
 		"Add a tab to a room.",
 		"/roomTabs",
@@ -56,7 +57,7 @@ func NewCreateRoomTabTool() Tool {
 
 // NewGetRoomTabDetailsTool gets room tab details
 func NewGetRoomTabDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_room_tab_details",
 		"Get details for a room tab by ID.",
 		"/roomTabs",
@@ -73,7 +74,7 @@ func NewUpdateRoomTabTool() Tool {
 		"displayName": StringProperty("User-friendly name for the tab."),
 	}
 
-	return NewUpdateTool[UpdateRoomTabParams](
+	return tools.NewUpdateTool[UpdateRoomTabParams](
 		"update_a_room_tab",
 		"Update a room tab by ID.",
 		"/roomTabs",
@@ -85,7 +86,7 @@ func NewUpdateRoomTabTool() Tool {
 
 // NewDeleteRoomTabTool deletes a room tab
 func NewDeleteRoomTabTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_room_tab",
 		"Delete a room tab by ID.",
 		"/roomTabs",

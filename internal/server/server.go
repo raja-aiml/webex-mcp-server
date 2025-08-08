@@ -12,9 +12,26 @@ import (
 )
 
 // CreateMCPServer creates and configures the MCP server with tools
+// By default, loads only core tools for minimal conversation functionality
 func CreateMCPServer(name, version string) (*mcp.Server, error) {
-	// Load all tools
-	toolRegistry, err := tools.LoadTools()
+	return CreateMCPServerWithMode(name, version, false)
+}
+
+// CreateMCPServerWithMode creates MCP server with specified tool mode
+// useAllTools: false = core tools only (minimal), true = all tools (full functionality)
+func CreateMCPServerWithMode(name, version string, useAllTools bool) (*mcp.Server, error) {
+	var toolRegistry *tools.Registry
+	var err error
+
+	// Load tools based on mode
+	if useAllTools {
+		log.Println("Loading all tools (core + advanced)")
+		toolRegistry, err = tools.LoadAllTools()
+	} else {
+		log.Println("Loading core tools only (minimal mode)")
+		toolRegistry, err = tools.LoadCoreTools()
+	}
+	
 	if err != nil {
 		return nil, fmt.Errorf("failed to load tools: %w", err)
 	}
@@ -27,6 +44,9 @@ func CreateMCPServer(name, version string) (*mcp.Server, error) {
 
 	// Register all tools with the server
 	registerTools(server, toolRegistry)
+
+	// Log loaded tools count
+	log.Printf("Loaded %d tools", len(toolRegistry.GetTools()))
 
 	return server, nil
 }

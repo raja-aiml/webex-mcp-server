@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListTeamMembershipsParams defines the parameters for listing team memberships
+
 type ListTeamMembershipsParams struct {
 	TeamId string `json:"teamId" required:"true"`
 	Max    int    `json:"max,omitempty" query:"max" includeZero:"false"`
@@ -31,7 +32,7 @@ func NewListTeamMembershipsTool() Tool {
 		"max":    IntegerProperty("Limit the maximum number of team memberships."),
 	}
 
-	return NewListTool[ListTeamMembershipsParams](
+	return tools.NewListTool[ListTeamMembershipsParams](
 		"list_team_memberships",
 		"List team memberships for a team.",
 		"/team/memberships",
@@ -48,7 +49,7 @@ func NewCreateTeamMembershipTool() Tool {
 		"isModerator": BooleanProperty("Whether the person is a team moderator."),
 	}
 
-	return NewCreateTool[CreateTeamMembershipParams](
+	return tools.NewCreateTool[CreateTeamMembershipParams](
 		"create_a_team_membership",
 		"Add someone to a team by Person ID or email address.",
 		"/team/memberships",
@@ -59,7 +60,7 @@ func NewCreateTeamMembershipTool() Tool {
 
 // NewGetTeamMembershipDetailsTool gets team membership details
 func NewGetTeamMembershipDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_team_membership_details",
 		"Get details for a team membership by ID.",
 		"/team/memberships",
@@ -75,7 +76,7 @@ func NewUpdateTeamMembershipTool() Tool {
 		"isModerator":  BooleanProperty("Whether the person is a team moderator."),
 	}
 
-	return NewUpdateTool[UpdateTeamMembershipParams](
+	return tools.NewUpdateTool[UpdateTeamMembershipParams](
 		"update_a_team_membership",
 		"Update a team membership by ID.",
 		"/team/memberships",
@@ -87,7 +88,7 @@ func NewUpdateTeamMembershipTool() Tool {
 
 // NewDeleteTeamMembershipTool deletes a team membership
 func NewDeleteTeamMembershipTool() Tool {
-	return NewDeleteTool(
+	return tools.NewDeleteTool(
 		"delete_a_team_membership",
 		"Delete a team membership by ID.",
 		"/team/memberships",

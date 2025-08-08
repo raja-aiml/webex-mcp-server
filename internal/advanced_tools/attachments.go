@@ -1,10 +1,10 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// CreateAttachmentActionParams defines the parameters for creating an attachment action
 type CreateAttachmentActionParams struct {
 	Type      string                 `json:"type" required:"true"`
 	MessageId string                 `json:"messageId" required:"true"`
@@ -19,7 +19,7 @@ func NewCreateAttachmentActionTool() Tool {
 		"inputs":    ObjectProperty("The attachment action's inputs.", map[string]*jsonschema.Schema{}),
 	}
 
-	return NewCreateTool[CreateAttachmentActionParams](
+	return tools.NewCreateTool[CreateAttachmentActionParams](
 		"create_an_attachment_action",
 		"Create an attachment action",
 		"/attachment/actions",
@@ -30,7 +30,7 @@ func NewCreateAttachmentActionTool() Tool {
 
 // NewGetAttachmentActionDetailsTool gets attachment action details
 func NewGetAttachmentActionDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_attachment_action_details",
 		"Get details for an attachment action by ID.",
 		"/attachment/actions",

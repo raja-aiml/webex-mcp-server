@@ -46,7 +46,7 @@ func TestInitializeConfig(t *testing.T) {
 			}()
 
 			tt.setup()
-			err := InitializeConfig()
+			err := InitializeConfig("")
 			
 			if (err != nil) != tt.wantErr {
 				t.Errorf("InitializeConfig() error = %v, wantErr %v", err, tt.wantErr)
@@ -70,7 +70,7 @@ func TestInitializeConfig_LoadsEnvFile(t *testing.T) {
 	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
 	defer cleanup()
 
-	err := InitializeConfig()
+	err := InitializeConfig("")
 	if err != nil {
 		t.Errorf("InitializeConfig() error = %v", err)
 	}

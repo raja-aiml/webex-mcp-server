@@ -56,53 +56,6 @@ func TestNewListDirectMessagesTool(t *testing.T) {
 	}
 }
 
-func TestNewGetRoomMeetingDetailsTool(t *testing.T) {
-	// Set up environment for default client
-	config.ResetForTesting()
-	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
-	defer func() {
-		cleanup()
-		config.ResetForTesting()
-		defaultClient = nil
-	}()
-	
-	// Initialize default client
-	_ = InitializeDefaultClient()
-	
-	tool := NewGetRoomMeetingDetailsTool()
-	
-	if tool == nil {
-		t.Fatal("NewGetRoomMeetingDetailsTool returned nil")
-	}
-	
-	if tool.Name() != "get_room_meeting_details" {
-		t.Errorf("Name() = %v, want get_room_meeting_details", tool.Name())
-	}
-}
-
-func TestNewGetMyOwnDetailsTool(t *testing.T) {
-	// Set up environment for default client
-	config.ResetForTesting()
-	cleanup := testutil.SetEnv(t, "WEBEX_PUBLIC_WORKSPACE_API_KEY", "test-key")
-	defer func() {
-		cleanup()
-		config.ResetForTesting()
-		defaultClient = nil
-	}()
-	
-	// Initialize default client
-	_ = InitializeDefaultClient()
-	
-	tool := NewGetMyOwnDetailsTool()
-	
-	if tool == nil {
-		t.Fatal("NewGetMyOwnDetailsTool returned nil")
-	}
-	
-	if tool.Name() != "get_my_own_details" {
-		t.Errorf("Name() = %v, want get_my_own_details", tool.Name())
-	}
-}
 
 func TestQueryParamsFunction(t *testing.T) {
 	tests := []struct {

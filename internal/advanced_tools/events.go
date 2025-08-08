@@ -1,10 +1,11 @@
-package tools
+package advanced_tools
 
 import (
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-// ListEventsParams defines the parameters for listing events
+
 type ListEventsParams struct {
 	Resource   string `json:"resource,omitempty" query:"resource"`
 	Type       string `json:"type,omitempty" query:"type"`
@@ -25,7 +26,7 @@ func NewListEventsTool() Tool {
 		"max":      IntegerProperty("Limit the maximum number of events in the response."),
 	}
 
-	return NewListTool[ListEventsParams](
+	return tools.NewListTool[ListEventsParams](
 		"list_events",
 		"List events in your organization.",
 		"/events",
@@ -35,7 +36,7 @@ func NewListEventsTool() Tool {
 
 // NewGetEventDetailsTool gets event details
 func NewGetEventDetailsTool() Tool {
-	return NewGetTool(
+	return tools.NewGetTool(
 		"get_event_details",
 		"Get details for an event by ID.",
 		"/events",

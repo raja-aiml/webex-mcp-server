@@ -44,17 +44,33 @@ func (r *Registry) GetTools() []Tool {
 	return tools
 }
 
-// LoadTools creates and populates the tool registry
-// The actual plugin loading is done by LoadDefaultPlugins function
-func LoadTools() (*Registry, error) {
+// LoadCoreTools creates registry with only essential conversation tools
+// Following KISS principle - only minimum required for bot conversations
+func LoadCoreTools() (*Registry, error) {
 	registry := NewRegistry()
-
-	// Use plugin architecture for extensibility
-	// This implements Open/Closed Principle - open for extension, closed for modification
 	manager := NewPluginManager()
 
-	// Load all available plugins
-	// This is defined in the same package to avoid circular imports
+	// Load only core plugins for conversation functionality
+	LoadCorePlugins(manager)
+
+	// Load plugins into registry
+	if err := manager.LoadPlugins(registry); err != nil {
+		return nil, err
+	}
+
+	return registry, nil
+}
+
+// LoadAllTools creates registry with both core and advanced tools
+// Used when full functionality is needed
+func LoadAllTools() (*Registry, error) {
+	registry := NewRegistry()
+	manager := NewPluginManager()
+
+	// Load core plugins first
+	LoadCorePlugins(manager)
+	
+	// Load all advanced plugins
 	LoadDefaultPlugins(manager)
 
 	// Load plugins into registry
@@ -63,4 +79,10 @@ func LoadTools() (*Registry, error) {
 	}
 
 	return registry, nil
+}
+
+// LoadTools is deprecated, use LoadCoreTools or LoadAllTools instead
+// Kept for backward compatibility
+func LoadTools() (*Registry, error) {
+	return LoadAllTools()
 }
