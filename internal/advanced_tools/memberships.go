@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListMembershipsParams struct {
 	RoomId      string `json:"roomId,omitempty" query:"roomId"`
 	PersonId    string `json:"personId,omitempty" query:"personId"`
@@ -28,19 +27,22 @@ type UpdateMembershipParams struct {
 }
 
 // NewListMembershipsTool lists room memberships
+// Note: When using bot tokens, this can only list memberships in rooms where the bot is a member.
+// Bot tokens cannot list memberships by personId or personEmail - this will result in "Failed to get activity" error.
 func NewListMembershipsTool() Tool {
 	properties := map[string]*jsonschema.Schema{
-		"roomId":      StringProperty("List memberships in a room, by room ID."),
-		"personId":    StringProperty("List memberships for a person, by person ID."),
-		"personEmail": StringProperty("List memberships for a person, by email address."),
+		"roomId":      StringProperty("List memberships in a room, by room ID. Bot tokens can only list memberships in rooms where they are members."),
+		"personId":    StringProperty("List memberships for a person, by person ID. Note: This parameter does not work with bot tokens."),
+		"personEmail": StringProperty("List memberships for a person, by email address. Note: This parameter does not work with bot tokens."),
 		"max":         IntegerProperty("Limit the maximum number of memberships."),
 	}
 
 	return tools.NewListTool[ListMembershipsParams](
 		"list_memberships",
-		"List room memberships",
+		"List room memberships. Bot tokens can only list memberships in rooms where they are members.",
 		"/memberships",
 		properties,
+		[]string{}, // No required fields - can list by roomId, personId or personEmail
 	)
 }
 
