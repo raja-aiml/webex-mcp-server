@@ -69,7 +69,7 @@ func LoadAllTools() (*Registry, error) {
 
 	// Load core plugins first
 	LoadCorePlugins(manager)
-	
+
 	// Load all advanced plugins
 	LoadDefaultPlugins(manager)
 

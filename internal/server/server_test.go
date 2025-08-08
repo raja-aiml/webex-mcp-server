@@ -34,12 +34,12 @@ func TestCreateMCPServer(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			server, err := CreateMCPServer(tt.srvName, tt.version)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("CreateMCPServer() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr && server == nil {
 				t.Error("CreateMCPServer() returned nil server")
 			}
@@ -121,16 +121,16 @@ func TestConvertToolSchema(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			schema, err := convertToolSchema(tt.tool)
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("convertToolSchema() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			if !tt.wantErr && schema == nil {
 				t.Error("convertToolSchema() returned nil schema")
 			}
-			
+
 			if tt.checkProps && !tt.wantErr {
 				if schema.Type != "object" {
 					t.Errorf("Schema type = %v, want object", schema.Type)
@@ -145,11 +145,11 @@ func TestConvertToolSchema(t *testing.T) {
 
 func TestCreateToolHandler(t *testing.T) {
 	tests := []struct {
-		name       string
-		tool       *mockTool
-		args       map[string]any
-		wantError  bool
-		toolError  bool
+		name      string
+		tool      *mockTool
+		args      map[string]any
+		wantError bool
+		toolError bool
 	}{
 		{
 			name: "successful execution",
@@ -176,37 +176,37 @@ func TestCreateToolHandler(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			handler := createToolHandler(tt.tool)
-			
+
 			// Create a mock server session
 			_ = mcp.NewServer(&mcp.Implementation{
 				Name:    "test",
 				Version: "1.0.0",
 			}, nil)
 			session := &mcp.ServerSession{}
-			
+
 			// Create params
 			params := &mcp.CallToolParamsFor[map[string]any]{
 				Name:      tt.tool.name,
 				Arguments: tt.args,
 			}
-			
+
 			// Execute handler
 			result, err := handler(context.Background(), session, params)
-			
+
 			if (err != nil) != tt.wantError {
 				t.Errorf("handler() error = %v, wantError %v", err, tt.wantError)
 				return
 			}
-			
+
 			if result == nil {
 				t.Error("handler() returned nil result")
 				return
 			}
-			
+
 			if result.IsError != tt.toolError {
 				t.Errorf("result.IsError = %v, want %v", result.IsError, tt.toolError)
 			}
-			
+
 			if len(result.Content) == 0 {
 				t.Error("handler() returned empty content")
 			}
@@ -220,10 +220,10 @@ func TestRegisterTools(t *testing.T) {
 		Name:    "test-server",
 		Version: "1.0.0",
 	}, nil)
-	
+
 	// Create a test registry with mock tools
 	registry := tools.NewRegistry()
-	
+
 	// Register test tools
 	mockTool1 := &mockTool{
 		name:        "tool1",
@@ -235,17 +235,17 @@ func TestRegisterTools(t *testing.T) {
 		description: "Test tool 2",
 		schemaType:  "legacy",
 	}
-	
+
 	registry.Register(mockTool1)
 	registry.Register(mockTool2)
-	
+
 	// Register tools with server
 	registerTools(server, registry)
-	
+
 	// Verify tools were registered (check server has tools)
 	// Note: The MCP server doesn't expose a way to check registered tools directly,
 	// so we just verify the function completes without panic
-	
+
 	// Test with tool that has invalid schema
 	registryWithBadTool := tools.NewRegistry()
 	badTool := &badSchemaTool{
@@ -255,7 +255,7 @@ func TestRegisterTools(t *testing.T) {
 		},
 	}
 	registryWithBadTool.Register(badTool)
-	
+
 	// This should not panic, just log the error
 	registerTools(server, registryWithBadTool)
 }

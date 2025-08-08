@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListTeamsParams struct {
 	Max int `json:"max,omitempty" query:"max" includeZero:"false"`
 }
@@ -34,6 +33,7 @@ func NewListTeamsTool() Tool {
 		"List teams to which the authenticated user belongs.",
 		"/teams",
 		properties,
+		[]string{}, // No required fields
 	)
 }
 

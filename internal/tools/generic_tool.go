@@ -3,7 +3,6 @@ package tools
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"strconv"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
@@ -31,11 +30,6 @@ func (t *GenericTool[T]) Execute(args json.RawMessage) (interface{}, error) {
 		return nil, fmt.Errorf("failed to parse arguments: %w", err)
 	}
 
-	// Validate required fields using reflection
-	if err := validateRequired(&params); err != nil {
-		return nil, err
-	}
-
 	if err := t.ensureClient(); err != nil {
 		return nil, fmt.Errorf("failed to initialize client: %w", err)
 	}
@@ -47,100 +41,93 @@ func (t *GenericTool[T]) ExecuteWithMap(args map[string]interface{}) (interface{
 	return ExecuteWithMapBase(t, args)
 }
 
-// validateRequired checks that required fields are not empty
-func validateRequired(params interface{}) error {
-	v := reflect.ValueOf(params).Elem()
-	t := v.Type()
+// SimpleTool provides a simple implementation without generics for map-based operations
+type SimpleTool struct {
+	ToolBase
+	executor func(map[string]interface{}, webex.HTTPClient) (interface{}, error)
+}
 
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		value := v.Field(i)
+// NewSimpleTool creates a new simple tool
+func NewSimpleTool(name, description string, schema *jsonschema.Schema, executor func(map[string]interface{}, webex.HTTPClient) (interface{}, error)) *SimpleTool {
+	return &SimpleTool{
+		ToolBase: NewToolBase(name, description, schema),
+		executor: executor,
+	}
+}
 
-		// Check if field has "required" tag
-		if required := field.Tag.Get("required"); required == "true" {
-			if isZeroValue(value) {
-				jsonTag := field.Tag.Get("json")
-				if jsonTag == "" {
-					jsonTag = field.Name
-				}
-				return fmt.Errorf("%s is required", jsonTag)
-			}
+// Execute implements the Tool interface
+func (t *SimpleTool) Execute(args json.RawMessage) (interface{}, error) {
+	var params map[string]interface{}
+	if len(args) > 0 {
+		if err := json.Unmarshal(args, &params); err != nil {
+			return nil, fmt.Errorf("failed to parse arguments: %w", err)
 		}
 	}
 
-	return nil
-}
-
-// isZeroValue checks if a reflect.Value is a zero value
-func isZeroValue(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.String:
-		return v.String() == ""
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Bool:
-		return !v.Bool()
-	case reflect.Slice, reflect.Map:
-		return v.IsNil() || v.Len() == 0
-	default:
-		return v.IsZero()
+	if err := t.ensureClient(); err != nil {
+		return nil, fmt.Errorf("failed to initialize client: %w", err)
 	}
+	return t.executor(params, t.client)
 }
 
-// QueryParams helps build query parameters from a struct
+// ExecuteWithMap implements the Tool interface
+func (t *SimpleTool) ExecuteWithMap(args map[string]interface{}) (interface{}, error) {
+	return ExecuteWithMapBase(t, args)
+}
+
+// --- Helper Functions ---
+
+// QueryParams converts a map to query parameters
 func QueryParams(params interface{}) map[string]string {
 	if params == nil {
 		return nil
 	}
-	
+
+	// Handle map[string]interface{} directly
+	if m, ok := params.(map[string]interface{}); ok {
+		return mapToQueryParams(m)
+	}
+
+	// Handle pointer to map
+	if m, ok := params.(*map[string]interface{}); ok && m != nil {
+		return mapToQueryParams(*m)
+	}
+
+	// For other types, return empty map
+	return make(map[string]string)
+}
+
+// mapToQueryParams converts a map to query parameters
+func mapToQueryParams(m map[string]interface{}) map[string]string {
 	result := make(map[string]string)
-	v := reflect.ValueOf(params)
-	if v.Kind() == reflect.Ptr {
-		v = v.Elem()
-	}
-	
-	// Only process struct types
-	if v.Kind() != reflect.Struct {
-		return nil
-	}
-	
-	t := v.Type()
-
-	for i := 0; i < t.NumField(); i++ {
-		field := t.Field(i)
-		value := v.Field(i)
-
-		// Skip zero values unless explicitly marked to include
-		if isZeroValue(value) && field.Tag.Get("includeZero") != "true" {
-			continue
-		}
-
-		// Get the query parameter name from the tag
-		paramName := field.Tag.Get("query")
-		if paramName == "" {
-			paramName = field.Tag.Get("json")
-			if paramName == "" {
-				paramName = field.Name
-			}
-		}
-
-		// Convert value to string
-		switch value.Kind() {
-		case reflect.String:
-			if s := value.String(); s != "" {
-				result[paramName] = s
-			}
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			if value.Int() != 0 {
-				result[paramName] = strconv.FormatInt(value.Int(), 10)
-			}
-		case reflect.Bool:
-			if value.Bool() {
-				result[paramName] = "true"
+	for k, v := range m {
+		if v != nil {
+			switch val := v.(type) {
+			case string:
+				if val != "" {
+					result[k] = val
+				}
+			case int:
+				if val != 0 {
+					result[k] = fmt.Sprintf("%d", val)
+				}
+			case int8, int16, int32, int64:
+				result[k] = fmt.Sprintf("%d", val)
+			case uint, uint8, uint16, uint32, uint64:
+				result[k] = fmt.Sprintf("%d", val)
+			case float32, float64:
+				result[k] = strconv.FormatFloat(val.(float64), 'f', -1, 64)
+			case bool:
+				result[k] = strconv.FormatBool(val)
+			default:
+				// For any other type, use fmt.Sprintf
+				s := fmt.Sprintf("%v", val)
+				if s != "" && s != "<nil>" {
+					result[k] = s
+				}
 			}
 		}
 	}
-
 	return result
 }
 
@@ -148,22 +135,33 @@ func QueryParams(params interface{}) map[string]string {
 
 // ListParams represents common parameters for list operations
 type ListParams struct {
-	Max int `json:"max,omitempty" query:"max"`
+	Max int `json:"max,omitempty"`
 }
 
 // IDParams represents operations that require an ID
 type IDParams struct {
-	ID string `json:"id" required:"true"`
+	ID string `json:"id"`
 }
 
 // --- Factory Functions for Common Tool Patterns ---
 
 // NewListTool creates a generic list tool
-func NewListTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema) *GenericTool[T] {
-	schema := SimpleSchema("List items from the API endpoint.", properties, []string{})
+func NewListTool[T any](name, description, endpoint string, properties map[string]*jsonschema.Schema, required []string) *GenericTool[T] {
+	schema := SimpleSchema("List items from the API endpoint.", properties, required)
 
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
-		queryParams := QueryParams(params)
+		// Convert params to map for query parameters
+		jsonBytes, err := json.Marshal(params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal params: %w", err)
+		}
+
+		var paramsMap map[string]interface{}
+		if err := json.Unmarshal(jsonBytes, &paramsMap); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+		}
+
+		queryParams := mapToQueryParams(paramsMap)
 		return client.Get(endpoint, queryParams)
 	})
 }
@@ -174,12 +172,18 @@ func NewGetTool(name, description, endpoint, idField, idDescription string) Tool
 		idField: StringProperty(idDescription),
 	}, []string{idField})
 
-	return NewGenericTool(name, description, schema, func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
-		id, ok := (*params)[idField].(string)
-		if !ok || id == "" {
+	return NewSimpleTool(name, description, schema, func(params map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+		id, ok := params[idField]
+		if !ok || id == nil {
 			return nil, fmt.Errorf("%s is required", idField)
 		}
-		return client.Get(fmt.Sprintf("%s/%s", endpoint, id), nil)
+
+		idStr := fmt.Sprintf("%v", id)
+		if idStr == "" || idStr == "<nil>" {
+			return nil, fmt.Errorf("%s cannot be empty", idField)
+		}
+
+		return client.Get(fmt.Sprintf("%s/%s", endpoint, idStr), nil)
 	})
 }
 
@@ -194,8 +198,8 @@ func NewCreateTool[T any](name, description, endpoint string, properties map[str
 
 // NewUpdateTool creates a generic update tool
 func NewUpdateTool[T any](name, description, endpoint, idField string, properties map[string]*jsonschema.Schema, required []string) *GenericTool[T] {
-	// Add ID field to properties
-	allProperties := make(map[string]*jsonschema.Schema)
+	// Create a copy of properties to avoid mutation
+	allProperties := make(map[string]*jsonschema.Schema, len(properties)+1)
 	for k, v := range properties {
 		allProperties[k] = v
 	}
@@ -207,24 +211,28 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 	schema := SimpleSchema("Update an existing item.", allProperties, allRequired)
 
 	return NewGenericTool(name, description, schema, func(params *T, client webex.HTTPClient) (interface{}, error) {
-		// Extract ID using reflection
-		v := reflect.ValueOf(params).Elem()
-		idValue := ""
-
-		// Find the ID field
-		for i := 0; i < v.NumField(); i++ {
-			field := v.Type().Field(i)
-			if field.Tag.Get("json") == idField {
-				idValue = v.Field(i).String()
-				break
-			}
+		// Convert params to map to extract ID
+		jsonBytes, err := json.Marshal(params)
+		if err != nil {
+			return nil, fmt.Errorf("failed to marshal params: %w", err)
 		}
 
-		if idValue == "" {
+		var paramsMap map[string]interface{}
+		if err := json.Unmarshal(jsonBytes, &paramsMap); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal to map: %w", err)
+		}
+
+		id, ok := paramsMap[idField]
+		if !ok || id == nil {
 			return nil, fmt.Errorf("%s is required", idField)
 		}
 
-		return client.Put(fmt.Sprintf("%s/%s", endpoint, idValue), params)
+		idStr := fmt.Sprintf("%v", id)
+		if idStr == "" || idStr == "<nil>" {
+			return nil, fmt.Errorf("%s cannot be empty", idField)
+		}
+
+		return client.Put(fmt.Sprintf("%s/%s", endpoint, idStr), params)
 	})
 }
 
@@ -234,12 +242,18 @@ func NewDeleteTool(name, description, endpoint, idField, idDescription string) T
 		idField: StringProperty(idDescription),
 	}, []string{idField})
 
-	return NewGenericTool(name, description, schema, func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
-		id, ok := (*params)[idField].(string)
-		if !ok || id == "" {
+	return NewSimpleTool(name, description, schema, func(params map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+		id, ok := params[idField]
+		if !ok || id == nil {
 			return nil, fmt.Errorf("%s is required", idField)
 		}
-		err := client.Delete(fmt.Sprintf("%s/%s", endpoint, id))
+
+		idStr := fmt.Sprintf("%v", id)
+		if idStr == "" || idStr == "<nil>" {
+			return nil, fmt.Errorf("%s cannot be empty", idField)
+		}
+
+		err := client.Delete(fmt.Sprintf("%s/%s", endpoint, idStr))
 		if err != nil {
 			return nil, err
 		}

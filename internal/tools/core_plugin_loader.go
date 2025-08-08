@@ -18,8 +18,8 @@ func (p *coreMessagingPlugin) Version() string { return "1.0.0" }
 func (p *coreMessagingPlugin) Register(registry *Registry) error {
 	// YAGNI: Only tools needed for query-response conversations
 	tools := []Tool{
-		NewListMessagesTool(),    // Read incoming queries
-		NewCreateMessageTool(),    // Send responses
+		NewListMessagesTool(),  // Read incoming queries
+		NewCreateMessageTool(), // Send responses
 	}
 
 	for _, tool := range tools {
@@ -39,8 +39,8 @@ func (p *coreWebhooksPlugin) Version() string { return "1.0.0" }
 func (p *coreWebhooksPlugin) Register(registry *Registry) error {
 	// Essential for receiving incoming messages
 	tools := []Tool{
-		NewCreateWebhookTool(),    // Set up message reception
-		NewListWebhooksTool(),     // Manage webhooks
+		NewCreateWebhookTool(), // Set up message reception
+		NewListWebhooksTool(),  // Manage webhooks
 	}
 
 	for _, tool := range tools {
@@ -60,8 +60,8 @@ func (p *coreInfoPlugin) Version() string { return "1.0.0" }
 func (p *coreInfoPlugin) Register(registry *Registry) error {
 	// Minimal tools for bot identity and room context
 	tools := []Tool{
-		NewListRoomsTool(),        // Find rooms to operate in
-		NewGetMyOwnDetailsTool(),  // Get bot identity
+		NewListRoomsTool(),       // Find rooms to operate in
+		NewGetMyOwnDetailsTool(), // Get bot identity
 	}
 
 	for _, tool := range tools {

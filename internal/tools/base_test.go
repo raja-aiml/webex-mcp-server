@@ -15,7 +15,7 @@ func TestExecuteWithMapBase(t *testing.T) {
 			if err := json.Unmarshal(args, &argsMap); err != nil {
 				return nil, err
 			}
-			
+
 			// Return test response
 			return map[string]interface{}{
 				"result": "success",
@@ -43,7 +43,7 @@ func TestExecuteWithMapBase(t *testing.T) {
 	if resultMap["result"] != "success" {
 		t.Errorf("Expected result = success, got %v", resultMap["result"])
 	}
-	
+
 	// Verify args were passed correctly
 	if argsInResult, ok := resultMap["args"].(map[string]interface{}); ok {
 		if argsInResult["key"] != "value" {
@@ -84,7 +84,7 @@ func TestExecuteWithMapBase_MarshalError(t *testing.T) {
 	args := map[string]interface{}{
 		"channel": ch,
 	}
-	
+
 	_, err := ExecuteWithMapBase(mockTool, args)
 	if err == nil {
 		t.Fatal("Expected marshal error, got nil")

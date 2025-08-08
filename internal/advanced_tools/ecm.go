@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type CreateECMFolderConfigurationParams struct {
 	RoomId      string `json:"roomId" required:"true"`
 	FolderId    string `json:"folderId" required:"true"`

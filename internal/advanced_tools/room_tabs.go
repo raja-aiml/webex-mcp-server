@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListRoomTabsParams struct {
 	RoomId string `json:"roomId" required:"true"`
 }
@@ -35,6 +34,7 @@ func NewListRoomTabsTool() Tool {
 		"List tabs for a room.",
 		"/roomTabs",
 		properties,
+		[]string{"roomId"}, // roomId is required
 	)
 }
 

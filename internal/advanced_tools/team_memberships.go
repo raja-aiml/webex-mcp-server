@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListTeamMembershipsParams struct {
 	TeamId string `json:"teamId" required:"true"`
 	Max    int    `json:"max,omitempty" query:"max" includeZero:"false"`
@@ -37,6 +36,7 @@ func NewListTeamMembershipsTool() Tool {
 		"List team memberships for a team.",
 		"/team/memberships",
 		properties,
+		[]string{"teamId"}, // teamId is required
 	)
 }
 

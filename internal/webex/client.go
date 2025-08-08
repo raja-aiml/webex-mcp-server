@@ -108,7 +108,7 @@ func (c *Client) buildSimpleURL(endpoint string) string {
 // buildURL constructs URL with query parameters
 func (c *Client) buildURL(endpoint string, params map[string]string) (string, error) {
 	fullURL := c.buildSimpleURL(endpoint)
-	
+
 	if len(params) > 0 {
 		u, err := url.Parse(fullURL)
 		if err != nil {
@@ -129,7 +129,7 @@ func (c *Client) buildURL(endpoint string, params map[string]string) (string, er
 // doRequest executes the HTTP request
 func (c *Client) doRequest(method, url string, data interface{}) (map[string]interface{}, error) {
 	var reqBody io.Reader
-	
+
 	if data != nil {
 		body, err := json.Marshal(data)
 		if err != nil {

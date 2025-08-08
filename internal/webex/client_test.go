@@ -17,7 +17,7 @@ func TestNewClient(t *testing.T) {
 			cleanup()
 			config.ResetForTesting()
 		}()
-		
+
 		client, err := NewClient()
 		if err != nil {
 			t.Fatalf("NewClient() error = %v", err)

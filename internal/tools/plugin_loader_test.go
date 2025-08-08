@@ -16,13 +16,17 @@ func TestCorePluginImplementations(t *testing.T) {
 		config.ResetForTesting()
 		defaultClient = nil
 	}()
-	
+
 	// Initialize default client
 	_ = InitializeDefaultClient()
-	
+
 	tests := []struct {
-		name        string
-		plugin      interface{ Name() string; Version() string; Register(*Registry) error }
+		name   string
+		plugin interface {
+			Name() string
+			Version() string
+			Register(*Registry) error
+		}
 		wantName    string
 		wantVersion string
 	}{
@@ -67,12 +71,15 @@ func TestCorePluginRegister(t *testing.T) {
 		config.ResetForTesting()
 		defaultClient = nil
 	}()
-	
+
 	// Initialize default client
 	_ = InitializeDefaultClient()
-	
+
 	// Test that each plugin can register its tools without error
-	plugins := []interface{ Name() string; Register(*Registry) error }{
+	plugins := []interface {
+		Name() string
+		Register(*Registry) error
+	}{
 		&coreMessagingPlugin{},
 		&coreWebhooksPlugin{},
 		&coreInfoPlugin{},
@@ -85,7 +92,7 @@ func TestCorePluginRegister(t *testing.T) {
 			if err != nil {
 				t.Errorf("%s.Register() error = %v", plugin.Name(), err)
 			}
-			
+
 			// Verify tools were registered
 			tools := registry.GetTools()
 			if len(tools) == 0 {

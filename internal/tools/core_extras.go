@@ -23,6 +23,7 @@ func NewListRoomsTool() Tool {
 		"List rooms visible to the authenticated user.",
 		"/rooms",
 		properties,
+		[]string{}, // No required fields for listing rooms
 	)
 }
 

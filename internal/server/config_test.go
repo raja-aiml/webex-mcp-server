@@ -33,7 +33,7 @@ func TestInitializeConfig(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			config.ResetForTesting()
-			
+
 			// Save original env
 			origKey := os.Getenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 			defer func() {
@@ -47,7 +47,7 @@ func TestInitializeConfig(t *testing.T) {
 
 			tt.setup()
 			err := InitializeConfig("")
-			
+
 			if (err != nil) != tt.wantErr {
 				t.Errorf("InitializeConfig() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -58,7 +58,7 @@ func TestInitializeConfig(t *testing.T) {
 func TestInitializeConfig_LoadsEnvFile(t *testing.T) {
 	config.ResetForTesting()
 	defer config.ResetForTesting()
-	
+
 	// Create a temporary .env file
 	envContent := []byte("TEST_ENV_VAR=test_value\n")
 	if err := os.WriteFile(".env", envContent, 0644); err != nil {
@@ -79,7 +79,7 @@ func TestInitializeConfig_LoadsEnvFile(t *testing.T) {
 	if os.Getenv("TEST_ENV_VAR") != "test_value" {
 		t.Error("Failed to load variables from .env file")
 	}
-	
+
 	// Cleanup
 	os.Unsetenv("TEST_ENV_VAR")
 }

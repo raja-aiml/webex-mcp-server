@@ -31,7 +31,7 @@ func CreateMCPServerWithMode(name, version string, useAllTools bool) (*mcp.Serve
 		log.Println("Loading core tools only (minimal mode)")
 		toolRegistry, err = tools.LoadCoreTools()
 	}
-	
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to load tools: %w", err)
 	}

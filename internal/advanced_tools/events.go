@@ -5,14 +5,13 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListEventsParams struct {
-	Resource   string `json:"resource,omitempty" query:"resource"`
-	Type       string `json:"type,omitempty" query:"type"`
-	ActorId    string `json:"actorId,omitempty" query:"actorId"`
-	From       string `json:"from,omitempty" query:"from"`
-	To         string `json:"to,omitempty" query:"to"`
-	Max        int    `json:"max,omitempty" query:"max" includeZero:"false"`
+	Resource string `json:"resource,omitempty" query:"resource"`
+	Type     string `json:"type,omitempty" query:"type"`
+	ActorId  string `json:"actorId,omitempty" query:"actorId"`
+	From     string `json:"from,omitempty" query:"from"`
+	To       string `json:"to,omitempty" query:"to"`
+	Max      int    `json:"max,omitempty" query:"max" includeZero:"false"`
 }
 
 // NewListEventsTool lists events
@@ -31,6 +30,7 @@ func NewListEventsTool() Tool {
 		"List events in your organization.",
 		"/events",
 		properties,
+		[]string{}, // No required fields
 	)
 }
 

@@ -5,7 +5,7 @@ import (
 	"log"
 
 	"github.com/raja-aiml/webex-mcp-server/internal/app"
-	
+
 	// Import for side effects - registers advanced tools loader
 	_ "github.com/raja-aiml/webex-mcp-server/internal/advanced_tools"
 )

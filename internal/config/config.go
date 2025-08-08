@@ -72,16 +72,16 @@ func GetWebexHeaders(contentType ...string) (map[string]string, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
-	
+
 	headers := map[string]string{
 		"Accept":        "application/json",
 		"Authorization": fmt.Sprintf("Bearer %s", cfg.WebexAPIKey),
 	}
-	
+
 	if len(contentType) > 0 && contentType[0] != "" {
 		headers["Content-Type"] = contentType[0]
 	}
-	
+
 	return headers, nil
 }
 
@@ -95,7 +95,7 @@ func GetWebexURL(endpoint string) (string, error) {
 	if err != nil {
 		return "", fmt.Errorf("failed to load config: %w", err)
 	}
-	
+
 	if !strings.HasPrefix(endpoint, "/") {
 		endpoint = "/" + endpoint
 	}
@@ -124,4 +124,3 @@ func GetWebexBaseURL() (string, error) {
 	}
 	return cfg.WebexAPIBaseURL, nil
 }
-

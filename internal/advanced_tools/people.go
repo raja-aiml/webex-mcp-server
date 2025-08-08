@@ -5,7 +5,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 )
 
-
 type ListPeopleParams struct {
 	Email       string `json:"email,omitempty" query:"email"`
 	DisplayName string `json:"displayName,omitempty" query:"displayName"`
@@ -73,6 +72,7 @@ func NewListPeopleTool() Tool {
 		"List people in your organization.",
 		"/people",
 		properties,
+		[]string{}, // No required fields
 	)
 }
 
@@ -180,4 +180,3 @@ func NewDeletePersonTool() Tool {
 		"A unique identifier for the person.",
 	)
 }
-

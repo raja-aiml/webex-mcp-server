@@ -48,13 +48,13 @@ func RunHTTPServer(ctx context.Context, httpAddr string, server *mcp.Server, ser
 func RunStdioServer(ctx context.Context, server *mcp.Server, serviceName, version string) error {
 	// Create base stdio transport
 	var transport mcp.Transport = mcp.NewStdioTransport()
-	
+
 	// Only enable logging if MCP_DEBUG environment variable is set
 	if os.Getenv("MCP_DEBUG") == "true" {
 		transport = mcp.NewLoggingTransport(transport, os.Stderr)
 		log.Println("MCP debug logging enabled (set MCP_DEBUG=false to disable)")
 	}
-	
+
 	log.Printf("Starting %s v%s in stdio mode", serviceName, version)
 
 	// Run with context

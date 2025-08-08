@@ -7,7 +7,6 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
-
 type ListRoomsParams struct {
 	TeamId string `json:"teamId,omitempty" query:"teamId"`
 	Type   string `json:"type,omitempty" query:"type"`
@@ -38,7 +37,6 @@ type UpdateRoomParams struct {
 	IsAnnouncementOnly bool   `json:"isAnnouncementOnly,omitempty"`
 	IsReadOnly         bool   `json:"isReadOnly,omitempty"`
 }
-
 
 // NewCreateRoomTool creates a new Webex room
 func NewCreateRoomTool() Tool {

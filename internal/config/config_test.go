@@ -40,7 +40,7 @@ func TestValidate(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// Reset singleton state for isolated testing
 			ResetForTesting()
-			
+
 			// Save original env
 			origKey := os.Getenv("WEBEX_PUBLIC_WORKSPACE_API_KEY")
 			defer func() {
@@ -397,4 +397,3 @@ func TestGetWebexBaseURL_ErrorCase(t *testing.T) {
 		t.Errorf("GetWebexBaseURL() should return error when config fails")
 	}
 }
-

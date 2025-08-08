@@ -39,6 +39,7 @@ func NewListWebhooksTool() Tool {
 		"List all of your webhooks.",
 		"/webhooks",
 		properties,
+		[]string{}, // No required fields for listing webhooks
 	)
 }
 

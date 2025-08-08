@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"reflect"
 	"testing"
 
 	"github.com/modelcontextprotocol/go-sdk/jsonschema"
@@ -146,15 +145,8 @@ func TestGenericTool_Execute(t *testing.T) {
 			wantResult: map[string]interface{}{"id": "123", "name": "Test Item"},
 			wantErr:    false,
 		},
-		{
-			name:   "validation error - missing required field",
-			params: testCreateParams{Description: "Missing name"},
-			executor: func(params *testCreateParams, client webex.HTTPClient) (interface{}, error) {
-				return nil, errors.New("should not reach here")
-			},
-			mockFunc: func(m *mockWebexClient) {},
-			wantErr:  true,
-		},
+		// Validation now relies on JSON schema, not reflection
+		// This test case is removed as validation happens at MCP level
 	}
 
 	for _, tt := range tests {
@@ -266,6 +258,8 @@ func TestGenericTool_ExecuteWithMap(t *testing.T) {
 	}
 }
 
+// TestValidateRequired removed - validation now relies on JSON schema
+/*
 func TestValidateRequired(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -368,7 +362,10 @@ func TestValidateRequired(t *testing.T) {
 		})
 	}
 }
+*/
 
+// TestIsZeroValue removed - no longer using reflection-based validation
+/*
 func TestIsZeroValue(t *testing.T) {
 	tests := []struct {
 		name  string
@@ -402,7 +399,7 @@ func TestIsZeroValue(t *testing.T) {
 				}
 				return
 			}
-			
+
 			v := reflect.ValueOf(tt.value)
 			if got := isZeroValue(v); got != tt.want {
 				t.Errorf("isZeroValue(%v) = %v, want %v", tt.value, got, tt.want)
@@ -410,48 +407,48 @@ func TestIsZeroValue(t *testing.T) {
 		})
 	}
 }
+*/
 
 func TestQueryParams(t *testing.T) {
-	type testParams struct {
-		Param1   string `json:"param1"`
-		Param2   string `json:"param2"`
-		Param3   int    `json:"param3"`
-		SkipThis string `json:"skipThis"`
+	// Test with map[string]interface{}
+	params := map[string]interface{}{
+		"param1": "value1",
+		"param2": "", // Empty string should be ignored
+		"param3": 123,
+		"param4": true,
+		"param5": nil,   // nil should be ignored
+		"param6": 0,     // Zero should be ignored
+		"param7": false, // False should be included
 	}
 
-	params := &testParams{
-		Param1: "value1",
-		Param2: "", // Should be ignored
-		Param3: 123,
-		// SkipThis is intentionally not set to test zero value handling
-	}
-
-	// Create queryParams map manually to test
-	queryParams := make(map[string]string)
-	if params.Param1 != "" {
-		queryParams["param1"] = params.Param1
-	}
-	if params.Param2 != "" {
-		queryParams["param2"] = params.Param2
-	}
-	if params.Param3 != 0 {
-		queryParams["param3"] = fmt.Sprintf("%d", params.Param3)
-	}
+	queryParams := QueryParams(params)
 
 	if queryParams["param1"] != "value1" {
 		t.Errorf("Expected param1=value1, got %s", queryParams["param1"])
 	}
 
 	if _, exists := queryParams["param2"]; exists {
-		t.Error("Expected param2 to be excluded (empty value)")
+		t.Error("Expected param2 to be excluded (empty string)")
 	}
 
 	if queryParams["param3"] != "123" {
 		t.Errorf("Expected param3=123, got %s", queryParams["param3"])
 	}
 
-	if _, exists := queryParams["skipThis"]; exists {
-		t.Error("Expected skipThis to be excluded")
+	if queryParams["param4"] != "true" {
+		t.Errorf("Expected param4=true, got %s", queryParams["param4"])
+	}
+
+	if _, exists := queryParams["param5"]; exists {
+		t.Error("Expected param5 to be excluded (nil value)")
+	}
+
+	if _, exists := queryParams["param6"]; exists {
+		t.Error("Expected param6 to be excluded (zero value)")
+	}
+
+	if queryParams["param7"] != "false" {
+		t.Errorf("Expected param7=false, got %s", queryParams["param7"])
 	}
 }
 
@@ -461,7 +458,7 @@ func TestNewListTool(t *testing.T) {
 		"offset": IntegerProperty("Number of items to skip"),
 	}
 
-	tool := NewListTool[testListParams]("test-list", "List test items", "/items", properties)
+	tool := NewListTool[testListParams]("test-list", "List test items", "/items", properties, []string{})
 
 	if tool.Name() != "test-list" {
 		t.Errorf("Expected name 'test-list', got %s", tool.Name())

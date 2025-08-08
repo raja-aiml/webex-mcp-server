@@ -36,7 +36,7 @@ func TestRunHTTPServer_HealthCheck(t *testing.T) {
 
 	// Create a context with cancel
 	ctx, cancel := context.WithCancel(context.Background())
-	
+
 	// Start server in goroutine
 	errCh := make(chan error, 1)
 	go func() {
@@ -59,7 +59,7 @@ func TestRunHTTPServer_HealthCheck(t *testing.T) {
 
 	// Cancel context to stop server
 	cancel()
-	
+
 	// Wait for server to shut down
 	select {
 	case err := <-errCh:
