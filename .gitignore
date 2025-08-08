@@ -32,7 +32,6 @@ go.work.sum
 # IDE/editor files
 *~
 *.swp
-.vscode/
 .idea/
 *.iml
 

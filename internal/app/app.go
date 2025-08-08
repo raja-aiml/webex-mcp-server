@@ -16,6 +16,7 @@ type Config struct {
 	Name     string
 	Version  string
 	HTTPAddr string
+	EnvPath  string // Path to .env file
 }
 
 // App represents the main application
@@ -38,7 +39,7 @@ func New(cfg Config) *App {
 // Run starts the application
 func (a *App) Run() error {
 	// Initialize configuration
-	if err := server.InitializeConfig(); err != nil {
+	if err := server.InitializeConfig(a.config.EnvPath); err != nil {
 		return err
 	}
 

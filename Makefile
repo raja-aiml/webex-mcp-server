@@ -265,6 +265,15 @@ test-coverage:
 dev-all: dev-fmt dev-lint dev-test
 	@echo "Development checks complete!"
 
+## check-token: Check Webex token and get user details
+check-token:
+	@echo "Checking Webex token and getting user details..."
+	@if [ -n "$(ENV_PATH)" ]; then \
+		echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"name":"test-client","version":"1.0.0","capabilities":{}}}{"jsonrpc":"2.0","id":2,"method":"mcp.tools","params":{"name":"get_me"}}' | ./build/webex-mcp-server -env $(ENV_PATH); \
+	else \
+		echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"name":"test-client","version":"1.0.0","capabilities":{}}}{"jsonrpc":"2.0","id":2,"method":"mcp.tools","params":{"name":"get_me"}}' | ./build/webex-mcp-server; \
+	fi
+
 # Support for dev subcommands
 fmt:
 ifeq ($(CMD),dev)

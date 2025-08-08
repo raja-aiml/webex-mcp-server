@@ -13,14 +13,19 @@ const (
 )
 
 func main() {
-	var httpAddr string
+	var (
+		httpAddr string
+		envPath  string
+	)
 	flag.StringVar(&httpAddr, "http", "", "if set, use streamable HTTP at this address, instead of stdin/stdout")
+	flag.StringVar(&envPath, "env", "", "path to .env file. If not set, will try to load from current directory")
 	flag.Parse()
 
 	application := app.New(app.Config{
 		Name:     ServerName,
 		Version:  ServerVersion,
 		HTTPAddr: httpAddr,
+		EnvPath:  envPath,
 	})
 
 	if err := application.Run(); err != nil {

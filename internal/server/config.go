@@ -9,10 +9,17 @@ import (
 )
 
 // InitializeConfig loads environment variables and validates configuration
-func InitializeConfig() error {
-	// Load environment variables
-	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: .env file not found: %v", err)
+func InitializeConfig(envPath string) error {
+	// Load environment variables from specified path or default
+	if envPath != "" {
+		if err := godotenv.Load(envPath); err != nil {
+			return fmt.Errorf("error loading .env file from %s: %w", envPath, err)
+		}
+	} else {
+		// Try loading from default location
+		if err := godotenv.Load(); err != nil {
+			log.Printf("Warning: .env file not found in default location: %v", err)
+		}
 	}
 
 	// Validate configuration
