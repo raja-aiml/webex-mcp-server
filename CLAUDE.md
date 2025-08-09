@@ -74,6 +74,8 @@ source .env
 
 ## Manual Testing with MCP Inspector
 
+**IMPORTANT**: Only use MCP Inspector when explicitly requested by the user for debugging or manual testing. For programmatic API calls, use the built binary directly.
+
 For manual testing and debugging MCP tools, use the MCP Inspector:
 
 ```bash
@@ -87,6 +89,23 @@ This will:
 - Debug tool interactions
 
 The inspector will be available at the URL shown in the terminal output (typically http://localhost:3000).
+
+## Using the Webex MCP Server Programmatically
+
+When users ask for Webex data (rooms, messages, etc.), use the built binary directly:
+
+```bash
+# 1. Build the server
+make build
+
+# 2. Use the binary with proper MCP protocol
+source .env && cat << 'EOF' | ./build/webex-mcp-server 2>/dev/null
+{"jsonrpc": "2.0", "method": "initialize", "params": {"protocolVersion": "2024-11-05", "capabilities": {"tools": {"call": {}}}}, "id": 1}
+{"jsonrpc": "2.0", "method": "tools/call", "params": {"name": "TOOL_NAME", "arguments": {}}, "id": 2}
+EOF
+```
+
+Available tools: list_rooms, list_messages, create_a_message, get_my_own_details, list_webhooks, create_a_webhook
 
 ## Quick Start for Development
 
