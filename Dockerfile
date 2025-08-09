@@ -46,7 +46,8 @@ RUN chown -R mcpuser:mcpuser /app
 # Switch to non-root user
 USER mcpuser
 
-# Set environment variable to look for .env in config directory
+# Set environment variable to look for .env in config directory (optional)
+# The app will use environment variables if .env is not found
 ENV DOTENV_PATH=/app/config/.env
 
 # MCP servers typically run in stdio mode by default

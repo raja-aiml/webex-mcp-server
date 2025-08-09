@@ -40,9 +40,16 @@ case "${1:-help}" in
     
     inspect)
         build_if_needed
-        npx @modelcontextprotocol/inspector docker run --rm -i \
-            -e WEBEX_PUBLIC_WORKSPACE_API_KEY="$WEBEX_PUBLIC_WORKSPACE_API_KEY" \
-            -e WEBEX_API_BASE_URL="${WEBEX_API_BASE_URL:-https://webexapis.com/v1}" \
+        echo "Starting MCP Inspector with Docker..."
+        echo "Note: The '.env file not found' warning is normal and can be ignored."
+        echo ""
+        # Pass environment variables directly to docker run
+        WEBEX_PUBLIC_WORKSPACE_API_KEY="$WEBEX_PUBLIC_WORKSPACE_API_KEY" \
+        WEBEX_API_BASE_URL="${WEBEX_API_BASE_URL:-https://webexapis.com/v1}" \
+        npx @modelcontextprotocol/inspector \
+            docker run --rm -i \
+            -e WEBEX_PUBLIC_WORKSPACE_API_KEY \
+            -e WEBEX_API_BASE_URL \
             "$IMAGE_NAME"
         ;;
     
