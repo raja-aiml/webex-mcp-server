@@ -241,17 +241,15 @@ webex-mcp-server-go/
 
 ## Quick Start
 
-### Using Helper Scripts
-
 ```bash
-# Test with MCP Inspector (stdio mode)
-./inspect-docker.sh
+# Test with MCP Inspector
+./scripts/mcp.sh inspect
 
 # Start HTTP/SSE server
-./start-http-server.sh
+./scripts/mcp.sh http
 
-# Run with docker-compose
-./run-mcp-http.sh
+# Run in stdio mode
+./scripts/mcp.sh stdio
 ```
 
 ### Manual Commands

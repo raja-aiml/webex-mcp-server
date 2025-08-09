@@ -2,6 +2,10 @@
   "chat.mcp.discovery.enabled": true,
   "mcp.servers": {
     "webex-mcp-docker": {
+      "command": "${workspaceFolder}/scripts/mcp.sh",
+      "args": ["stdio"]
+    },
+    "webex-mcp-docker-direct": {
       "command": "docker",
       "args": [
         "run",
@@ -9,17 +13,6 @@
         "-i",
         "--env-file", "${workspaceFolder}/.env",
         "webex-mcp-server:latest"
-      ]
-    },
-    "webex-mcp-compose": {
-      "command": "docker-compose",
-      "args": [
-        "-f", "${workspaceFolder}/docker-compose.yml",
-        "--profile", "stdio",
-        "run",
-        "--rm",
-        "-T",
-        "webex-mcp-stdio"
       ]
     },
     "webex-mcp-local": {
