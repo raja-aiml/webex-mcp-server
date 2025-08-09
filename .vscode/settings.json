@@ -1,32 +1,29 @@
 {
   "chat.mcp.discovery.enabled": true,
-  "mcp.servers": {
-    "webex-mcp-docker": {
-      "command": "${workspaceFolder}/scripts/mcp.sh",
-      "args": ["stdio"]
-    },
-    "webex-mcp-docker-direct": {
-      "command": "docker",
-      "args": [
-        "run",
-        "--rm",
-        "-i",
-        "--env-file", "${workspaceFolder}/.env",
-        "webex-mcp-server:latest"
-      ]
-    },
-    "webex-mcp-local": {
-      "command": "go",
-      "args": ["run", "${workspaceFolder}/main.go"],
-      "env": {
-        "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
+  "customizations": {
+    "vscode": {
+      "mcp": {
+        "servers": {
+          "webex-local": {
+            "command": "go",
+            "args": ["run", "${workspaceFolder}"],
+            "env": {
+              "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
+            }
+          },
+          "webex-docker": {
+            "command": "docker",
+            "args": [
+              "run",
+              "--rm",
+              "-i",
+              "--env-file",
+              "${workspaceFolder}/.env",
+              "webex-mcp-server:latest"
+            ]
+          }
+        }
       }
-    },
-    "webex-mcp-http": {
-      "transport": {
-        "type": "sse"
-      },
-      "url": "http://localhost:8084/sse"
     }
   }
 }

@@ -1,0 +1,48 @@
+{
+  "servers": {
+  // https://github.com/github/github-mcp-server/
+    "Github": {
+      "url": "https://api.githubcopilot.com/mcp/"
+    },
+    // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+    "fetch": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": ["mcp-server-fetch"]
+    },
+    "webex-mcp-local-stdio": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "${workspaceFolder}/main.go"],
+      "env": {
+        "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
+      }
+    },
+    // Note: Direct SSE not supported - Go SDK uses Streamable HTTP protocol
+    // Try "http" type instead of "sse" type in VS Code
+    "webex-mcp-local-http": {
+      "type": "http",
+      "url": "http://localhost:3001"
+    },
+    "webex-mcp-local-http-server": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001"],
+      "env": {
+        "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
+      }
+    },
+    "webex-mcp-docker": {
+      "type": "stdio",
+      "command": "docker",
+      "args": [
+        "run",
+        "--rm",
+        "-i",
+        "--env-file",
+        "${workspaceFolder}/.env",
+        "webex-mcp-server:latest"
+      ]
+    }
+  }
+}
