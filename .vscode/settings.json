@@ -1,0 +1,29 @@
+{
+  "chat.mcp.discovery.enabled": true,
+  "customizations": {
+    "vscode": {
+      "mcp": {
+        "servers": {
+          "webex-local": {
+            "command": "go",
+            "args": ["run", "${workspaceFolder}"],
+            "env": {
+              "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
+            }
+          },
+          "webex-docker": {
+            "command": "docker",
+            "args": [
+              "run",
+              "--rm",
+              "-i",
+              "--env-file",
+              "${workspaceFolder}/.env",
+              "webex-mcp-server:latest"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

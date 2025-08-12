@@ -1,0 +1,84 @@
+
+services:
+  # MCP Server in stdio mode (for use with mcp.json)
+  webex-mcp-stdio:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: webex-mcp-server:latest
+    container_name: webex-mcp-stdio
+    volumes:
+      - ./.env:/app/config/.env:ro
+    environment:
+      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
+      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
+      - DOTENV_PATH=/app/config/.env
+    stdin_open: true
+    tty: true
+    networks:
+      - mcp-network
+    profiles:
+      - stdio
+
+  # MCP Server in HTTP/SSE mode
+  webex-mcp-http:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: webex-mcp-server:latest
+    container_name: webex-mcp-http
+    ports:
+      - "${MCP_PORT:-8084}:8084"
+    volumes:
+      - ./.env:/app/config/.env:ro
+    environment:
+      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
+      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
+      - DOTENV_PATH=/app/config/.env
+    command: ["-http", ":8084"]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8084/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - mcp-network
+    profiles:
+      - http
+
+  # Development mode with volume mounts
+  webex-mcp-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: builder
+    image: webex-mcp-server:dev
+    container_name: webex-mcp-dev
+    ports:
+      - "${MCP_PORT:-8084}:8084"
+    env_file:
+      - .env
+    environment:
+      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
+      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
+    volumes:
+      - .:/app
+      - /app/build
+      - go-modules:/go/pkg/mod
+    working_dir: /app
+    command: ["go", "run", ".", "-http", ":8084"]
+    stdin_open: true
+    tty: true
+    networks:
+      - mcp-network
+    profiles:
+      - dev
+
+networks:
+  mcp-network:
+    driver: bridge
+
+volumes:
+  go-modules:
