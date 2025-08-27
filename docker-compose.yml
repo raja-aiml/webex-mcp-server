@@ -1,6 +1,6 @@
 
 services:
-  # MCP Server in stdio mode (for use with mcp.json)
+  # MCP Server in stdio mode (for use with mcp.json) - All 42 tools enabled
   webex-mcp-stdio:
     build:
       context: .
@@ -13,6 +13,7 @@ services:
       - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
       - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
       - DOTENV_PATH=/app/config/.env
+    command: ["-all-tools"]
     stdin_open: true
     tty: true
     networks:
@@ -20,7 +21,7 @@ services:
     profiles:
       - stdio
 
-  # MCP Server in HTTP/SSE mode
+  # MCP Server in HTTP/SSE mode - All 42 tools enabled
   webex-mcp-http:
     build:
       context: .
@@ -35,7 +36,7 @@ services:
       - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
       - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
       - DOTENV_PATH=/app/config/.env
-    command: ["-http", ":8084"]
+    command: ["-http", ":8084", "-all-tools"]
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8084/health"]
@@ -48,7 +49,7 @@ services:
     profiles:
       - http
 
-  # Development mode with volume mounts
+  # Development mode with volume mounts - All 42 tools enabled
   webex-mcp-dev:
     build:
       context: .
