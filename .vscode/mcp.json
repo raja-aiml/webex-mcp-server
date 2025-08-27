@@ -1,16 +1,13 @@
 {
   "servers": {
-  // https://github.com/github/github-mcp-server/
-    "Github": {
-      "url": "https://api.githubcopilot.com/mcp/"
-    },
-    // https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
-    "fetch": {
-      "type": "stdio",
-      "command": "uvx",
-      "args": ["mcp-server-fetch"]
-    },
     "webex-mcp-local-stdio": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "${workspaceFolder}/main.go", "-env", "${workspaceFolder}/.env"],
+      "env": {}
+    },
+    // Alternative: Use environment variable directly
+    "webex-mcp-local-stdio-env": {
       "type": "stdio",
       "command": "go",
       "args": ["run", "${workspaceFolder}/main.go"],
@@ -25,6 +22,13 @@
       "url": "http://localhost:3001"
     },
     "webex-mcp-local-http-server": {
+      "type": "stdio",
+      "command": "go",
+      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001", "-env", "${workspaceFolder}/.env"],
+      "env": {}
+    },
+    // Alternative: Use environment variable directly for HTTP server
+    "webex-mcp-local-http-server-env": {
       "type": "stdio",
       "command": "go",
       "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001"],

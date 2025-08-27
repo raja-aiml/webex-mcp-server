@@ -42,6 +42,9 @@ func CreateMCPServerWithMode(name, version string, useAllTools bool) (*mcp.Serve
 		Version: version,
 	}, &mcp.ServerOptions{
 		Instructions: fmt.Sprintf("%s v%s - A Model Context Protocol server for Webex messaging operations", name, version),
+		InitializedHandler: func(ctx context.Context, req *mcp.InitializedRequest) {
+			log.Printf("[%s v%s] MCP session initialized successfully", name, version)
+		},
 	})
 
 	// Register all tools with the server
@@ -51,9 +54,7 @@ func CreateMCPServerWithMode(name, version string, useAllTools bool) (*mcp.Serve
 	log.Printf("Loaded %d tools", len(toolRegistry.GetTools()))
 
 	return server, nil
-}
-
-// convertToolSchema converts various schema formats to jsonschema.Schema
+} // convertToolSchema converts various schema formats to jsonschema.Schema
 func convertToolSchema(tool tools.Tool) (*jsonschema.Schema, error) {
 	schemaInterface := tool.GetInputSchema()
 
