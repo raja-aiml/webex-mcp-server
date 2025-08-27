@@ -11,50 +11,24 @@ import (
 	"github.com/raja-aiml/webex-mcp-server/internal/server"
 )
 
-// Config holds the application configuration - TypeScript interface compliant
+// Config holds the application configuration
 type Config struct {
-	Name        string `json:"name"`           // Application name
-	Version     string `json:"version"`        // Application version
-	HTTPAddr    string `json:"http,omitempty"` // HTTP server address
-	EnvPath     string `json:"env,omitempty"`  // Path to .env file
-	UseAllTools bool   `json:"useAllTools"`    // Whether to load all tools or just core tools
-	SSEMode     bool   `json:"sse,omitempty"`  // Server-Sent Events mode (TypeScript compliance)
+	Name        string
+	Version     string
+	HTTPAddr    string
+	EnvPath     string
+	UseAllTools bool
+	SSEMode     bool // Preserve SSE support
 }
 
-// App represents the main application - TypeScript class-like structure
+// App represents the main application
 type App struct {
 	config Config
 	ctx    context.Context
 	cancel context.CancelFunc
 }
 
-// ApplicationState represents the current application state - TypeScript enum-like
-type ApplicationState int
-
-const (
-	StateInitializing ApplicationState = iota
-	StateRunning
-	StateShuttingDown
-	StateStopped
-)
-
-// String method for ApplicationState - TypeScript toString() equivalent
-func (s ApplicationState) String() string {
-	switch s {
-	case StateInitializing:
-		return "initializing"
-	case StateRunning:
-		return "running"
-	case StateShuttingDown:
-		return "shutting_down"
-	case StateStopped:
-		return "stopped"
-	default:
-		return "unknown"
-	}
-}
-
-// New creates a new application instance - TypeScript constructor pattern
+// New creates a new application instance
 func New(cfg Config) *App {
 	ctx, cancel := context.WithCancel(context.Background())
 	return &App{
@@ -64,29 +38,14 @@ func New(cfg Config) *App {
 	}
 }
 
-// GetConfig returns application configuration - TypeScript getter pattern
-func (a *App) GetConfig() Config {
-	return a.config
-}
-
-// GetState returns current application state - TypeScript getter pattern
-func (a *App) GetState() ApplicationState {
-	select {
-	case <-a.ctx.Done():
-		return StateStopped
-	default:
-		return StateRunning
-	}
-}
-
-// Run starts the application - TypeScript async method pattern
+// Run starts the application
 func (a *App) Run() error {
 	// Initialize configuration
 	if err := server.InitializeConfig(a.config.EnvPath); err != nil {
 		return err
 	}
 
-	// Create MCP server with specified mode
+	// Create MCP server
 	mcpServer, err := server.CreateMCPServerWithMode(a.config.Name, a.config.Version, a.config.UseAllTools)
 	if err != nil {
 		return err
@@ -96,23 +55,25 @@ func (a *App) Run() error {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
 
-	// Start server in goroutine
+	// Start server
 	errChan := make(chan error, 1)
 	go func() {
-		// TypeScript-style conditional execution
 		if a.config.HTTPAddr != "" || a.config.SSEMode {
-			// Default to port 3001 if SSE mode but no address specified (TypeScript pattern)
 			addr := a.config.HTTPAddr
 			if addr == "" && a.config.SSEMode {
 				addr = ":3001"
 			}
-			errChan <- server.RunHTTPServer(a.ctx, addr, mcpServer, a.config.Name, a.config.Version)
+			if a.config.SSEMode {
+				errChan <- server.RunSSEServer(a.ctx, addr, mcpServer, a.config.Name, a.config.Version)
+			} else {
+				errChan <- server.RunHTTPServer(a.ctx, addr, mcpServer, a.config.Name, a.config.Version)
+			}
 		} else {
 			errChan <- server.RunStdioServer(a.ctx, mcpServer, a.config.Name, a.config.Version)
 		}
 	}()
 
-	// Wait for signal or error - TypeScript Promise.race() pattern
+	// Wait for signal or error
 	select {
 	case sig := <-sigChan:
 		log.Printf("Received signal: %v", sig)
@@ -122,18 +83,15 @@ func (a *App) Run() error {
 	}
 }
 
-// Shutdown gracefully shuts down the application - TypeScript async method pattern
+// Shutdown gracefully shuts down the application
 func (a *App) Shutdown() error {
 	log.Println("Shutting down gracefully...")
-
-	// Cancel context to signal shutdown
 	a.cancel()
 
-	// Give some time for graceful shutdown - TypeScript timeout pattern
+	// Give time for graceful shutdown
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	// Wait for shutdown or timeout - TypeScript Promise.race() pattern
 	select {
 	case <-shutdownCtx.Done():
 		log.Println("Shutdown timeout exceeded, forcing exit")

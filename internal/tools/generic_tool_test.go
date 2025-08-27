@@ -58,10 +58,6 @@ type testCreateParams struct {
 	Description string `json:"description,omitempty"`
 }
 
-type testIDParams struct {
-	ID string `json:"id" jsonschema:"required"`
-}
-
 func TestNewGenericTool(t *testing.T) {
 	schema := &jsonschema.Schema{
 		Type: "object",
