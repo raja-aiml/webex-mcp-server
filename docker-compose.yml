@@ -7,12 +7,11 @@ services:
       dockerfile: Dockerfile
     image: webex-mcp-server:latest
     container_name: webex-mcp-stdio
-    volumes:
-      - ./.env:/app/config/.env:ro
+    env_file:
+      - .env
     environment:
       - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
       - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
-      - DOTENV_PATH=/app/config/.env
     command: ["-all-tools"]
     stdin_open: true
     tty: true
@@ -30,12 +29,11 @@ services:
     container_name: webex-mcp-http
     ports:
       - "${MCP_PORT:-8084}:8084"
-    volumes:
-      - ./.env:/app/config/.env:ro
+    env_file:
+      - .env
     environment:
       - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
       - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
-      - DOTENV_PATH=/app/config/.env
     command: ["-http", ":8084", "-all-tools"]
     restart: unless-stopped
     healthcheck:
