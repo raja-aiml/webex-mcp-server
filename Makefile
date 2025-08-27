@@ -42,11 +42,13 @@ help:
 	@echo "  run http       Run the application in HTTP/SSE mode"
 	@echo ""
 	@echo "DOCKER COMMANDS:"
-	@echo "  docker build   Build Docker image"
-	@echo "  docker run     Run application in Docker"
-	@echo "  docker run-dev Run in Docker development mode"
-	@echo "  docker stop    Stop Docker containers"
-	@echo "  docker clean   Clean Docker resources"
+	@echo "  docker build     Build Docker image"
+	@echo "  docker run       Run application in Docker (HTTP mode)"
+	@echo "  docker run-http  Run in Docker HTTP mode (port 8084)"
+	@echo "  docker run-stdio Run in Docker stdio mode (for MCP clients)"
+	@echo "  docker run-dev   Run in Docker development mode"
+	@echo "  docker stop      Stop Docker containers"
+	@echo "  docker clean     Clean Docker resources"
 	@echo ""
 	@echo "DEPENDENCY COMMANDS:"
 	@echo "  deps           Install dependencies"
@@ -107,7 +109,7 @@ all:
 ## run: Run command handler
 run:
 ifeq ($(SUBCMD),http)
-	@$(MAKE) -s run-http
+	@$(MAKE) -s run-http-impl
 else ifeq ($(SUBCMD),)
 	@echo "Running $(BINARY_NAME) in stdio mode..."
 	$(GOCMD) run .
@@ -115,11 +117,6 @@ else
 	@echo "Unknown run subcommand: $(SUBCMD)"
 	@echo "Available: run, run http"
 endif
-
-## run-http: Run the application in HTTP/SSE mode
-run-http:
-	@echo "Running $(BINARY_NAME) in HTTP/SSE mode..."
-	$(GOCMD) run . -http :3001
 
 # Support for "make run http"
 http:
@@ -135,6 +132,10 @@ ifeq ($(SUBCMD),build)
 	@$(MAKE) -s docker-build MAKECMDGOALS=docker-build
 else ifeq ($(SUBCMD),run)
 	@$(MAKE) -s docker-run MAKECMDGOALS=docker-run
+else ifeq ($(SUBCMD),run-http)
+	@$(MAKE) -s docker-run-http MAKECMDGOALS=docker-run-http
+else ifeq ($(SUBCMD),run-stdio)
+	@$(MAKE) -s docker-run-stdio MAKECMDGOALS=docker-run-stdio
 else ifeq ($(SUBCMD),run-dev)
 	@$(MAKE) -s docker-run-dev MAKECMDGOALS=docker-run-dev
 else ifeq ($(SUBCMD),stop)
@@ -143,14 +144,16 @@ else ifeq ($(SUBCMD),clean)
 	@$(MAKE) -s docker-clean MAKECMDGOALS=docker-clean
 else ifeq ($(SUBCMD),)
 	@echo "Docker commands:"
-	@echo "  make docker build   - Build Docker image"
-	@echo "  make docker run     - Run in Docker"
-	@echo "  make docker run-dev - Run in Docker development mode"
-	@echo "  make docker stop    - Stop Docker containers"
-	@echo "  make docker clean   - Clean Docker resources"
+	@echo "  make docker build     - Build Docker image"
+	@echo "  make docker run       - Run in Docker (HTTP mode - default)"
+	@echo "  make docker run-http  - Run in Docker HTTP mode"
+	@echo "  make docker run-stdio - Run in Docker stdio mode"
+	@echo "  make docker run-dev   - Run in Docker development mode"
+	@echo "  make docker stop      - Stop Docker containers"
+	@echo "  make docker clean     - Clean Docker resources"
 else
 	@echo "Unknown docker subcommand: $(SUBCMD)"
-	@echo "Available: build, run, run-dev, stop, clean"
+	@echo "Available: build, run, run-http, run-stdio, run-dev, stop, clean"
 endif
 
 ## docker-build: Build Docker image
@@ -160,8 +163,18 @@ docker-build:
 
 ## docker-run: Run application in Docker
 docker-run:
-	@echo "Running in Docker..."
-	docker-compose up
+	@echo "Running in Docker (HTTP mode)..."
+	docker-compose --profile http up
+
+## docker-run-http: Run application in Docker HTTP mode
+docker-run-http:
+	@echo "Running in Docker HTTP mode..."
+	docker-compose --profile http up
+
+## docker-run-stdio: Run application in Docker stdio mode
+docker-run-stdio:
+	@echo "Running in Docker stdio mode..."
+	docker-compose --profile stdio up
 
 ## docker-run-dev: Run in Docker development mode
 docker-run-dev:
@@ -181,6 +194,20 @@ docker-clean:
 	docker rmi $(BINARY_NAME):dev || true
 
 # Support for docker subcommands
+run-http:
+ifeq ($(CMD),docker)
+	@# This target exists only to support "make docker run-http" syntax
+else
+	@$(MAKE) -s run-http-impl
+endif
+
+run-http-impl:
+	@echo "Running $(BINARY_NAME) in HTTP/SSE mode..."
+	$(GOCMD) run . -http :3001
+
+run-stdio:
+	@# This target exists only to support "make docker run-stdio" syntax
+
 run-dev:
 	@# This target exists only to support "make docker run-dev" syntax
 
