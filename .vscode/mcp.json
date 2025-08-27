@@ -3,14 +3,14 @@
     "webex-mcp-local-stdio": {
       "type": "stdio",
       "command": "go",
-      "args": ["run", "${workspaceFolder}/main.go", "-env", "${workspaceFolder}/.env"],
+      "args": ["run", "${workspaceFolder}/main.go", "-env", "${workspaceFolder}/.env", "-all-tools"],
       "env": {}
     },
     // Alternative: Use environment variable directly
     "webex-mcp-local-stdio-env": {
       "type": "stdio",
       "command": "go",
-      "args": ["run", "${workspaceFolder}/main.go"],
+      "args": ["run", "${workspaceFolder}/main.go", "-all-tools"],
       "env": {
         "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
       }
@@ -24,14 +24,14 @@
     "webex-mcp-local-http-server": {
       "type": "stdio",
       "command": "go",
-      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001", "-env", "${workspaceFolder}/.env"],
+      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001", "-env", "${workspaceFolder}/.env", "-all-tools"],
       "env": {}
     },
     // Alternative: Use environment variable directly for HTTP server
     "webex-mcp-local-http-server-env": {
       "type": "stdio",
       "command": "go",
-      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001"],
+      "args": ["run", "${workspaceFolder}/main.go", "-http", ":3001", "-all-tools"],
       "env": {
         "WEBEX_PUBLIC_WORKSPACE_API_KEY": "${env:WEBEX_PUBLIC_WORKSPACE_API_KEY}"
       }
