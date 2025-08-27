@@ -68,7 +68,7 @@ services:
       - /app/build
       - go-modules:/go/pkg/mod
     working_dir: /app
-    command: ["go", "run", ".", "-http", ":8084"]
+    command: ["go", "run", ".", "-http", ":8084", "-all-tools"]
     stdin_open: true
     tty: true
     networks:
