@@ -213,8 +213,18 @@ func NewUpdateTool[T any](name, description, endpoint, idField string, propertie
 	}
 	allProperties[idField] = StringProperty("The ID of the item to update")
 
-	// Add ID field to required
-	allRequired := append([]string{idField}, required...)
+	// Add ID field to required if not already present
+	allRequired := make([]string, 0, len(required)+1)
+	hasIdField := false
+	for _, field := range required {
+		if field == idField {
+			hasIdField = true
+		}
+		allRequired = append(allRequired, field)
+	}
+	if !hasIdField {
+		allRequired = append([]string{idField}, allRequired...)
+	}
 
 	schema := SimpleSchema("Update an existing item.", allProperties, allRequired)
 

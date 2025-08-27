@@ -80,30 +80,39 @@ func NewCreateMessageTool() Tool {
 		"parentId":      StringProperty("The parent message to reply to."),
 	}
 
-	// Create a proper schema with oneOf for recipient validation
+	// Create a simple schema without oneOf (MCP doesn't support oneOf at top level)
 	schema := &jsonschema.Schema{
 		Type:        "object",
-		Description: "Post a new message to a room or person.",
+		Description: "Post a new message to a room or person. Specify either roomId, toPersonId, or toPersonEmail.",
 		Properties:  properties,
-		// Remove the generic required array, handle validation with oneOf
-		OneOf: []*jsonschema.Schema{
-			{
-				Properties: properties,
-				Required:   []string{"roomId"},
-			},
-			{
-				Properties: properties,
-				Required:   []string{"toPersonId"},
-			},
-			{
-				Properties: properties,
-				Required:   []string{"toPersonEmail"},
-			},
-		},
+		// No required fields at schema level - validation handled in code
 	}
 
 	return NewGenericTool("create_a_message", "Post a new message to a room or person.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
+			// Validate that exactly one recipient field is specified
+			hasRoomId := (*params)["roomId"] != nil && (*params)["roomId"] != ""
+			hasToPersonId := (*params)["toPersonId"] != nil && (*params)["toPersonId"] != ""
+			hasToPersonEmail := (*params)["toPersonEmail"] != nil && (*params)["toPersonEmail"] != ""
+
+			recipientCount := 0
+			if hasRoomId {
+				recipientCount++
+			}
+			if hasToPersonId {
+				recipientCount++
+			}
+			if hasToPersonEmail {
+				recipientCount++
+			}
+
+			if recipientCount == 0 {
+				return nil, fmt.Errorf("exactly one of roomId, toPersonId, or toPersonEmail is required")
+			}
+			if recipientCount > 1 {
+				return nil, fmt.Errorf("only one of roomId, toPersonId, or toPersonEmail should be specified")
+			}
+
 			// Validate that at least one content field is specified
 			hasText := (*params)["text"] != nil && (*params)["text"] != ""
 			hasMarkdown := (*params)["markdown"] != nil && (*params)["markdown"] != ""
