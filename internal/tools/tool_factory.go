@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server/internal/config"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
@@ -62,15 +62,24 @@ func (t *ToolBase) GetInputSchema() interface{} { return t.schema }
 
 // SimpleSchema creates a simple schema with properties and required fields
 func SimpleSchema(description string, properties map[string]*jsonschema.Schema, required []string) *jsonschema.Schema {
-	return &jsonschema.Schema{
+	schema := &jsonschema.Schema{
 		Type:        "object",
 		Description: description,
 		Properties:  properties,
-		Required:    required,
 	}
+
+	// Only set required if there are actually required fields
+	if len(required) > 0 {
+		schema.Required = required
+	}
+
+	// Set additionalProperties to false for strict validation
+	schema.AdditionalProperties = &jsonschema.Schema{Type: "boolean"}
+
+	return schema
 }
 
-// StringProperty creates a string property schema
+// StringProperty creates a string property schema with proper constraints
 func StringProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "string",
@@ -78,15 +87,29 @@ func StringProperty(description string) *jsonschema.Schema {
 	}
 }
 
-// IntegerProperty creates an integer property schema
+// RequiredStringProperty creates a required string property
+func RequiredStringProperty(description string) *jsonschema.Schema {
+	minLen := 1
+	return &jsonschema.Schema{
+		Type:        "string",
+		Description: description,
+		MinLength:   &minLen, // Non-empty required
+	}
+}
+
+// IntegerProperty creates an integer property schema with constraints
 func IntegerProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "integer",
 		Description: description,
+		Minimum:     float64Ptr(0), // Default to non-negative
 	}
 }
 
-// BooleanProperty creates a boolean property schema
+// Helper function for float64 pointer
+func float64Ptr(f float64) *float64 {
+	return &f
+} // BooleanProperty creates a boolean property schema
 func BooleanProperty(description string) *jsonschema.Schema {
 	return &jsonschema.Schema{
 		Type:        "boolean",

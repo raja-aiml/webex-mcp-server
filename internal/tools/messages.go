@@ -3,7 +3,7 @@ package tools
 import (
 	"fmt"
 
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
@@ -80,20 +80,30 @@ func NewCreateMessageTool() Tool {
 		"parentId":      StringProperty("The parent message to reply to."),
 	}
 
-	// Custom validation for this tool
-	schema := SimpleSchema("Post a new message to a room or person.", properties, []string{})
+	// Create a proper schema with oneOf for recipient validation
+	schema := &jsonschema.Schema{
+		Type:        "object",
+		Description: "Post a new message to a room or person.",
+		Properties:  properties,
+		// Remove the generic required array, handle validation with oneOf
+		OneOf: []*jsonschema.Schema{
+			{
+				Properties: properties,
+				Required:   []string{"roomId"},
+			},
+			{
+				Properties: properties,
+				Required:   []string{"toPersonId"},
+			},
+			{
+				Properties: properties,
+				Required:   []string{"toPersonEmail"},
+			},
+		},
+	}
 
 	return NewGenericTool("create_a_message", "Post a new message to a room or person.", schema,
 		func(params *map[string]interface{}, client webex.HTTPClient) (interface{}, error) {
-			// Validate that at least one recipient is specified
-			hasRoom := (*params)["roomId"] != nil && (*params)["roomId"] != ""
-			hasPersonId := (*params)["toPersonId"] != nil && (*params)["toPersonId"] != ""
-			hasPersonEmail := (*params)["toPersonEmail"] != nil && (*params)["toPersonEmail"] != ""
-
-			if !hasRoom && !hasPersonId && !hasPersonEmail {
-				return nil, fmt.Errorf("at least one of roomId, toPersonId, or toPersonEmail is required")
-			}
-
 			// Validate that at least one content field is specified
 			hasText := (*params)["text"] != nil && (*params)["text"] != ""
 			hasMarkdown := (*params)["markdown"] != nil && (*params)["markdown"] != ""

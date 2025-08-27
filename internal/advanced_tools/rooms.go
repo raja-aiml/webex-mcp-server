@@ -2,7 +2,7 @@ package advanced_tools
 
 import (
 	"fmt"
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )

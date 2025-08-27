@@ -55,7 +55,7 @@ func RunStdioServer(ctx context.Context, server *mcp.Server, serviceName, versio
 		log.Println("MCP debug logging enabled (set MCP_DEBUG=false to disable)")
 	}
 
-	log.Printf("Starting %s v%s in stdio mode", serviceName, version)
+	log.Printf("Starting %s v%s in stdio mode (MCP protocol version: 2024-11-05)", serviceName, version)
 
 	// Run with context
 	return server.Run(ctx, transport)

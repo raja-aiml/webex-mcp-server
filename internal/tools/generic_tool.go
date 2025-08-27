@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 
@@ -27,13 +27,21 @@ func NewGenericTool[T any](name, description string, schema *jsonschema.Schema, 
 func (t *GenericTool[T]) Execute(args json.RawMessage) (interface{}, error) {
 	var params T
 	if err := json.Unmarshal(args, &params); err != nil {
-		return nil, fmt.Errorf("failed to parse arguments: %w", err)
+		// Provide more helpful error message
+		return nil, fmt.Errorf("invalid arguments format: %w. Please check the tool schema for required fields", err)
 	}
 
 	if err := t.ensureClient(); err != nil {
-		return nil, fmt.Errorf("failed to initialize client: %w", err)
+		return nil, fmt.Errorf("service initialization failed: %w. Please check your API credentials", err)
 	}
-	return t.executor(&params, t.client)
+
+	result, err := t.executor(&params, t.client)
+	if err != nil {
+		// Wrap errors with more context
+		return nil, fmt.Errorf("%s failed: %w", t.name, err)
+	}
+
+	return result, nil
 }
 
 // ExecuteWithMap implements the Tool interface

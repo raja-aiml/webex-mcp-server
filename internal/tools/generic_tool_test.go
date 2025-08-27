@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/raja-aiml/webex-mcp-server/internal/webex"
 )
 

@@ -1,7 +1,7 @@
 package tools
 
 import (
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 )
 
 // ListWebhooksParams defines the parameters for listing webhooks

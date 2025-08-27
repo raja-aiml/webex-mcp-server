@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/modelcontextprotocol/go-sdk/jsonschema"
+	"github.com/google/jsonschema-go/jsonschema"
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 	"github.com/raja-aiml/webex-mcp-server/internal/testutil"
 	"github.com/raja-aiml/webex-mcp-server/internal/tools"
@@ -182,16 +182,17 @@ func TestCreateToolHandler(t *testing.T) {
 				Name:    "test",
 				Version: "1.0.0",
 			}, nil)
-			session := &mcp.ServerSession{}
 
-			// Create params
-			params := &mcp.CallToolParamsFor[map[string]any]{
-				Name:      tt.tool.name,
-				Arguments: tt.args,
+			// Create request
+			request := &mcp.CallToolRequest{
+				Params: &mcp.CallToolParams{
+					Name:      tt.tool.name,
+					Arguments: tt.args,
+				},
 			}
 
 			// Execute handler
-			result, err := handler(context.Background(), session, params)
+			result, err := handler(context.Background(), request)
 
 			if (err != nil) != tt.wantError {
 				t.Errorf("handler() error = %v, wantError %v", err, tt.wantError)
