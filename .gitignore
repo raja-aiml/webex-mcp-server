@@ -24,7 +24,27 @@ go.work.sum
 
 # Environment files
 .env
+.env.local
 .env.*.local
+.env.production
+.env.staging
+.env.development
+
+# Backup environment files
+.env.backup
+.env.bak
+*.env.backup
+*.env.bak
+
+# Secret files
+secrets/
+*.key
+*.pem
+*.p12
+*.pfx
+*secret*
+*password*
+*credentials*
 
 # Logs
 *.log

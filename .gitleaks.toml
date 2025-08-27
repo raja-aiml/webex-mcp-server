@@ -1,0 +1,50 @@
+# Gitleaks configuration file
+# https://github.com/zricethezav/gitleaks
+
+[extend]
+# Extend default gitleaks config
+useDefault = true
+
+[[rules]]
+description = "Webex API Token"
+id = "webex-api-token"
+regex = '''(?i)(webex|cisco).{0,20}(token|key|secret).{0,20}[=:\s"']*([a-zA-Z0-9]{32,})'''
+tags = ["secret", "webex", "api"]
+
+[[rules]]
+description = "Generic API Key"
+id = "generic-api-key"
+regex = '''(?i)(api.{0,20}key).{0,20}[=:\s"']*([a-zA-Z0-9]{20,})'''
+tags = ["secret", "api"]
+
+[[rules]]
+description = "Bearer Token"
+id = "bearer-token"
+regex = '''(?i)bearer\s+([a-zA-Z0-9\-_=]{20,})'''
+tags = ["secret", "bearer"]
+
+[[rules]]
+description = "Authorization Header"
+id = "auth-header"
+regex = '''(?i)authorization["\s]*[:=]["\s]*[a-zA-Z0-9\-_=]{20,}'''
+tags = ["secret", "auth"]
+
+[allowlist]
+description = "Allowlist for test files and examples"
+files = [
+    '''\.env\.example$''',
+    '''_test\.go$''',
+    '''README\.md$''',
+    '''\.md$''',
+    '''Makefile$''',
+]
+
+# Allow placeholder values
+regexes = [
+    '''your_webex_api_token_here''',
+    '''your-webex-token''',
+    '''test-api-key''',
+    '''test-token''',
+    '''Bearer \$\{.*\}''',
+    '''Bearer.*\$\{.*\}''',
+]

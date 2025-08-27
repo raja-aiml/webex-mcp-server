@@ -1,25 +1,19 @@
 
 services:
-  # MCP Server in stdio mode (for use with mcp.json) - All 42 tools enabled
-  webex-mcp-stdio:
+  # Production MCP Server (matches mcp.json webex-mcp-docker config)
+  webex-mcp-server:
     build:
       context: .
       dockerfile: Dockerfile
     image: webex-mcp-server:latest
-    container_name: webex-mcp-stdio
+    container_name: webex-mcp-server
     env_file:
       - .env
-    environment:
-      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
-      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
-    command: ["-all-tools"]
     stdin_open: true
     tty: true
-    networks:
-      - mcp-network
-    profiles:
-      - stdio
-
+    command: ["-all-tools"]
+    restart: unless-stopped
+    
   # MCP Server in HTTP/SSE mode - All 42 tools enabled
   webex-mcp-http:
     build:
@@ -55,19 +49,14 @@ services:
       target: builder
     image: webex-mcp-server:dev
     container_name: webex-mcp-dev
-    ports:
-      - "${MCP_PORT:-8084}:8084"
     env_file:
       - .env
-    environment:
-      - WEBEX_PUBLIC_WORKSPACE_API_KEY=${WEBEX_PUBLIC_WORKSPACE_API_KEY}
-      - WEBEX_API_BASE_URL=${WEBEX_API_BASE_URL:-https://webexapis.com/v1}
     volumes:
       - .:/app
       - /app/build
       - go-modules:/go/pkg/mod
     working_dir: /app
-    command: ["go", "run", ".", "-http", ":8084", "-all-tools"]
+    command: ["go", "run", ".", "-env", ".env", "-all-tools"]
     stdin_open: true
     tty: true
     networks:

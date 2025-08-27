@@ -38,22 +38,20 @@ help:
 	@echo "  build all      Build binaries for all platforms"
 	@echo ""
 	@echo "RUN COMMANDS:"
-	@echo "  run            Run the application in stdio mode (6 core tools)"
-	@echo "  run http       Run the application in HTTP/SSE mode (6 core tools)"
+	@echo "  run            Run locally (stdio mode, matching mcp.json local config)"
+	@echo "  run http       Run the application in HTTP/SSE mode"
 	@echo ""
-	@echo "  NOTE: Add -all-tools flag to load 42 tools instead of 6 core tools"
-	@echo "        Example: go run . -all-tools -http :3001"
+	@echo "MCP COMMANDS:"
+	@echo "  mcp-local      Run matching mcp.json webex-mcp-local-stdio config"
+	@echo "  mcp-docker     Run matching mcp.json webex-mcp-docker config"
 	@echo ""
 	@echo "DOCKER COMMANDS:"
 	@echo "  docker build     Build Docker image"
-	@echo "  docker run       Run application in Docker (HTTP mode, 42 tools)"
-	@echo "  docker run-http  Run in Docker HTTP mode (port 8084, 42 tools)"
-	@echo "  docker run-stdio Run in Docker stdio mode (for MCP clients, 42 tools)"
-	@echo "  docker run-dev   Run in Docker development mode (42 tools)"
+	@echo "  docker run       Run matching mcp.json docker config (stdio mode)"
+	@echo "  docker run-http  Run in Docker HTTP mode (port 8084)"
+	@echo "  docker run-dev   Run in Docker development mode"
 	@echo "  docker stop      Stop Docker containers"
 	@echo "  docker clean     Clean Docker resources"
-	@echo ""
-	@echo "  NOTE: All Docker services now include all 42 tools by default"
 	@echo ""
 	@echo "DEPENDENCY COMMANDS:"
 	@echo "  deps           Install dependencies"
@@ -74,13 +72,8 @@ help:
 	@echo "QUICK COMMANDS (shortcuts):"
 	@echo "  make           Show this help"
 	@echo "  make build     Build for current platform"
-	@echo "  make run       Run in stdio mode (6 core tools)"
+	@echo "  make run       Run locally (matching mcp.json local config)"
 	@echo "  make test      Run tests (alias for dev test)"
-	@echo ""
-	@echo "TOOL MODES:"
-	@echo "  Core Mode:     6 essential tools (default) - messaging, webhooks, rooms"
-	@echo "  All Tools:     42 tools including advanced room/people/team management"
-	@echo "  Enable All:    Add -all-tools flag or use docker run-dev"
 
 #=============================================================================
 # Build Commands
@@ -121,12 +114,22 @@ run:
 ifeq ($(SUBCMD),http)
 	@$(MAKE) -s run-http-impl
 else ifeq ($(SUBCMD),)
-	@echo "Running $(BINARY_NAME) in stdio mode..."
-	$(GOCMD) run .
+	@echo "Running $(BINARY_NAME) locally (matching mcp.json local config)..."
+	$(GOCMD) run . -env .env -all-tools
 else
 	@echo "Unknown run subcommand: $(SUBCMD)"
 	@echo "Available: run, run http"
 endif
+
+## mcp-local: Run matching mcp.json webex-mcp-local-stdio config
+mcp-local:
+	@echo "Running MCP server locally (stdio mode, -all-tools)..."
+	$(GOCMD) run . -env .env -all-tools
+
+## mcp-docker: Run matching mcp.json webex-mcp-docker config
+mcp-docker: docker-build
+	@echo "Running MCP server in Docker (stdio mode, -all-tools)..."
+	docker run --rm -i --env-file .env webex-mcp-server:latest
 
 # Support for "make run http"
 http:
@@ -144,8 +147,6 @@ else ifeq ($(SUBCMD),run)
 	@$(MAKE) -s docker-run MAKECMDGOALS=docker-run
 else ifeq ($(SUBCMD),run-http)
 	@$(MAKE) -s docker-run-http MAKECMDGOALS=docker-run-http
-else ifeq ($(SUBCMD),run-stdio)
-	@$(MAKE) -s docker-run-stdio MAKECMDGOALS=docker-run-stdio
 else ifeq ($(SUBCMD),run-dev)
 	@$(MAKE) -s docker-run-dev MAKECMDGOALS=docker-run-dev
 else ifeq ($(SUBCMD),stop)
@@ -155,15 +156,14 @@ else ifeq ($(SUBCMD),clean)
 else ifeq ($(SUBCMD),)
 	@echo "Docker commands:"
 	@echo "  make docker build     - Build Docker image"
-	@echo "  make docker run       - Run in Docker (HTTP mode - 42 tools)"
-	@echo "  make docker run-http  - Run in Docker HTTP mode (42 tools)"
-	@echo "  make docker run-stdio - Run in Docker stdio mode (42 tools)"
-	@echo "  make docker run-dev   - Run in Docker development mode (42 tools)"
+	@echo "  make docker run       - Run matching mcp.json docker config (stdio)"
+	@echo "  make docker run-http  - Run in Docker HTTP mode"
+	@echo "  make docker run-dev   - Run in Docker development mode"
 	@echo "  make docker stop      - Stop Docker containers"
 	@echo "  make docker clean     - Clean Docker resources"
 else
 	@echo "Unknown docker subcommand: $(SUBCMD)"
-	@echo "Available: build, run, run-http, run-stdio, run-dev, stop, clean"
+	@echo "Available: build, run, run-http, run-dev, stop, clean"
 endif
 
 ## docker-build: Build Docker image
@@ -171,20 +171,15 @@ docker-build:
 	@echo "Building Docker image..."
 	docker build -f Dockerfile -t $(BINARY_NAME):latest .
 
-## docker-run: Run application in Docker
-docker-run:
-	@echo "Running in Docker (HTTP mode)..."
-	docker-compose --profile http up
+## docker-run: Run matching mcp.json webex-mcp-docker config
+docker-run: docker-build
+	@echo "Running in Docker (stdio mode, matching mcp.json config)..."
+	docker run --rm -i --env-file .env $(BINARY_NAME):latest
 
 ## docker-run-http: Run application in Docker HTTP mode
 docker-run-http:
 	@echo "Running in Docker HTTP mode..."
 	docker-compose --profile http up
-
-## docker-run-stdio: Run application in Docker stdio mode
-docker-run-stdio:
-	@echo "Running in Docker stdio mode..."
-	docker-compose --profile stdio up
 
 ## docker-run-dev: Run in Docker development mode
 docker-run-dev:
@@ -213,10 +208,7 @@ endif
 
 run-http-impl:
 	@echo "Running $(BINARY_NAME) in HTTP/SSE mode..."
-	$(GOCMD) run . -http :3001
-
-run-stdio:
-	@# This target exists only to support "make docker run-stdio" syntax
+	$(GOCMD) run . -http :3001 -all-tools
 
 run-dev:
 	@# This target exists only to support "make docker run-dev" syntax
@@ -308,6 +300,45 @@ check-token:
 	else \
 		echo '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"name":"test-client","version":"1.0.0","capabilities":{}}}{"jsonrpc":"2.0","id":2,"method":"mcp.tools","params":{"name":"get_me"}}' | ./build/webex-mcp-server; \
 	fi
+
+## security-scan: Run security scans
+security-scan:
+	@echo "Running security scans..."
+	@if command -v gitleaks >/dev/null 2>&1; then \
+		echo "🔍 Running gitleaks scan..."; \
+		gitleaks detect --config .gitleaks.toml --verbose --no-git; \
+	else \
+		echo "⚠️  gitleaks not installed. Install with: brew install gitleaks"; \
+	fi
+	@echo "🔍 Running manual secret checks..."
+	@echo "Checking for .env files that would be committed to git..."
+	@if git ls-files | grep -E "\.env$$|\.env\.local$$|\.env\.production$$" >/dev/null 2>&1; then \
+		echo "❌ .env files found in git index (these would be committed)!"; \
+		git ls-files | grep -E "\.env$$|\.env\.local$$|\.env\.production$$"; \
+		exit 1; \
+	else \
+		echo "✅ No .env files in git index"; \
+	fi
+	@echo "Checking for hardcoded secrets in tracked files..."
+	@if git ls-files | xargs grep -l "WEBEX_PUBLIC_WORKSPACE_API_KEY.*=.*[a-zA-Z0-9]{30,}" 2>/dev/null; then \
+		echo "❌ Potential hardcoded Webex API key found in tracked files!"; \
+		git ls-files | xargs grep -l "WEBEX_PUBLIC_WORKSPACE_API_KEY.*=.*[a-zA-Z0-9]{30,}" 2>/dev/null; \
+		exit 1; \
+	fi
+	@if git ls-files | xargs grep -l "sk-[a-zA-Z0-9-_]{40,}" 2>/dev/null; then \
+		echo "❌ Potential OpenAI API key found in tracked files!"; \
+		git ls-files | xargs grep -l "sk-[a-zA-Z0-9-_]{40,}" 2>/dev/null; \
+		exit 1; \
+	fi
+	@echo "✅ No hardcoded secrets found in tracked files"
+	@echo "✅ Security scan completed - repository is secure!"
+
+## setup-hooks: Set up git hooks for security
+setup-hooks:
+	@echo "Setting up git hooks..."
+	@cp scripts/pre-commit.sh .git/hooks/pre-commit
+	@chmod +x .git/hooks/pre-commit
+	@echo "✅ Pre-commit hook installed"
 
 # Support for dev subcommands
 fmt:
